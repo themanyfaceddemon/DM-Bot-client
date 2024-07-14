@@ -20,3 +20,11 @@ class ServerSystem:
 
     def register(self, login: str, password: str) -> str:
         pass
+    
+    def download_server_texture(self) -> str:
+        """Функция загрузки текстур с сервера
+
+        Returns:
+            str: Путь до архива с текстурами
+        """
+        pass
