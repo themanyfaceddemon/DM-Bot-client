@@ -17,3 +17,6 @@ class ServerSystem:
             return True
         
         return False
+
+    def register(self, login: str, password: str) -> str:
+        pass
