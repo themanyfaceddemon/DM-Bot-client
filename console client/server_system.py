@@ -3,12 +3,12 @@ import requests
 
 
 class ServerSystem:
-    __slots__ = ['_session', '_ip']
+    __slots__ = ['_session', '_url']
     DEFAULT_CHUNK_SIZE: int = 8192
     
     def __init__(self) -> None:
         self._session = requests.Session()
-        self._ip: str = ""
+        self._url: str = "http://"
     
     def setup_server_ip(self, ip: str) -> None:
         """Устанавливает IP-адрес сервера и проверяет его доступность.
@@ -22,7 +22,7 @@ class ServerSystem:
         if not self.check_connect(ip):
             raise ConnectionError(f"Unable to connect to server at {ip}")
         
-        self._ip = ip
+        self._url = f"http://{ip}"
     
     def check_connect(self, ip: str) -> bool:
         """Проверяет доступность сервера.
@@ -49,7 +49,7 @@ class ServerSystem:
             requests.exceptions.HTTPError: Если запрос к серверу завершился ошибкой.
             IOError: Если произошла ошибка при сохранении файла.
         """
-        response: requests.Response = self._session.post(f"http://{self._ip}/server/download", stream=True)
+        response: requests.Response = self._session.post(f"{self._url}/server/download", stream=True)
         response.raise_for_status()
 
         archive_path = "sprites.zip"
@@ -80,7 +80,7 @@ class ServerSystem:
             "password": password
         }
         
-        response: requests.Response = self._session.post(f"http://{self._ip}/account/register", json=payload)
+        response: requests.Response = self._session.post(f"{self._url}/account/register", json=payload)
         response.raise_for_status()
         
         data = response.json()
@@ -107,7 +107,7 @@ class ServerSystem:
             "password": password
         }
         
-        response: requests.Response = self._session.post(f"http://{self._ip}/account/login", json=payload)
+        response: requests.Response = self._session.post(f"{self._url}/account/login", json=payload)
         response.raise_for_status()
         
         data = response.json()
@@ -124,5 +124,5 @@ class ServerSystem:
         Raises:
             requests.exceptions.HTTPError: Если запрос к серверу завершился ошибкой.
         """
-        response: requests.Response = self._session.post(f"http://{self._ip}/account/logout")
+        response: requests.Response = self._session.post(f"{self._url}/account/logout")
         response.raise_for_status()
