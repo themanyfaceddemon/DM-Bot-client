@@ -35,7 +35,7 @@ def main() -> None:
                     pickle.dump(data, f)
                     print("Адрес сохранен!")
             else:
-                print(f"Ошибка: {response.status_code}")
+                print(f"Ошибка: {response.status_code} не удалось подключиться к {url}")
                 continue
         elif choice == 2:
             # Выход
