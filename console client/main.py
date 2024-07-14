@@ -21,7 +21,7 @@ def main() -> None:
     while True:
         # 1. Ввод адреса или выход
         console_menu.menu_address()
-        choice = int(input())
+        choice = int(input("Введите действие: "))
         if choice == 1:
             # Ввод IP-адреса
             ip = str(input("Введите IP: "))
@@ -47,7 +47,7 @@ def main() -> None:
         # 2. Регистрация, вход или выход
         while True:
             console_menu.menu_auth()
-            choice = int(input())
+            choice = int(input("Введите действие: "))
             if choice == 1:
                 # Регистрация
                 supp_module.register(url)  # TODO: доделать register() в supp_module.py
@@ -66,7 +66,7 @@ def main() -> None:
         if choice == 2:
             while True:
                 console_menu.dm_menu()
-                choice = int(input())
+                choice = int(input("Введите действие: "))
                 if choice == 1:
                     # Смена пароля
                     supp_module.change_password(url) # TODO: доделать change_password() в supp_module.py 
