@@ -1,70 +1,86 @@
-import pickle
+import sys
 
-import console_menu
-import requests
-import supp_module
+from console_menu import display_title_screen, dm_menu, menu_address, menu_auth
+from server_system_setup import server_system
 
-bin_file = "data_info.bin"
-data = {
-    "ip": "gg",
-    "login": "aga",
-    "password": "1234",
-    "token": "tyt"
-}
+
+def user_input_ip() -> bool:
+    """Ввод IP пользователем
+
+    Returns:
+        bool: True если ip валиден
+    """
+    try:
+        user_ip: str = input("Введите IP сервера: ")
+        
+        # Защита от дурака. 
+        # 127,0/0,1^5000 будет преобразовано в 127.0.0.1:5000
+        user_ip = user_ip.translate(str.maketrans({
+            ',': '.', 
+            '/': '.', 
+            '^': ':'
+        }))
+        
+        server_system.setup_server_ip(user_ip)
+        # TODO: Сохранение IP сервера
+        
+        return True
+        
+    except ConnectionError as err:
+        print(f"Ошибка при подключении к {user_ip}. Ошибка: {err}")
+    
+    return False
+
+def user_input_registration() -> bool:
+    raise NotImplementedError(f"user_input_registration() not implemented yet")
+
+def user_input_login() -> bool:
+    raise NotImplementedError(f"user_input_login() not implemented yet")
+
+def user_input_chrange_password() -> None:
+    raise NotImplementedError(f"user_input_chrange_password() not implemented yet")
 
 def main() -> None:
-    console_menu.display_title_screen()
+    display_title_screen()
+    menu_status: int
+    user_input: int
+    
     while True:
-        # 1. Ввод адреса или выход
-        choice = console_menu.menu_address()
-        if choice == 1:
-            # Ввод IP-адреса
-            ip = str(input("Введите IP: "))
-            url = f"http://{ip}"
-            response = requests.get(url + "/server/status")  # TODO: /server/status не робит
-            if response.status_code == 200:
-                print("Соединение установлено.")
-                print(response.json())
-                data["ip"] = ip
-                with open(bin_file, "wb") as f:
-                    pickle.dump(data, f)
-                    print("Адрес сохранен!")
-            else:
-                print(f"Ошибка: {response.status_code} не удалось подключиться к {url}")
-                continue
-        elif choice == 2:
-            # Выход
-            exit()
-
-        # 2. Регистрация, вход или выход
-        while True:
-            choice = console_menu.menu_auth()
-            if choice == 1:
-                # Регистрация
-                supp_module.register(url)  # TODO: доделать register() в supp_module.py
-                continue
-            elif choice == 2:
-                # Вход
-                supp_module.login(url)  # TODO: доделать login() в supp_module.py
-                break
-            elif choice == 3:
-                # Выход
-                break
-
-        # 3. Меню действий (только после успешного входа)
-        if choice == 2:
-            while True:
-                choice = console_menu.dm_menu()
-                if choice == 1:
-                    # Смена пароля
-                    supp_module.change_password(url) # TODO: доделать change_password() в supp_module.py 
-                elif choice == 2:
-                    # Выход из учетной записи
+        if menu_status == 1:
+            user_input = menu_address()
+            match user_input:
+                case 1:
+                    if user_input_ip():
+                        menu_status = 2
                     break
+                
+                case 2:
+                    sys.exit(0)
 
-    # end main
-    pass
 
-
+        if menu_status == 2:
+            user_input = menu_auth()
+            match user_input:
+                case 1:
+                    if user_input_registration():
+                        menu_status = 3
+                    break
+                
+                case 2:
+                    if user_input_login():
+                        menu_status = 3
+                    break
+        
+        
+        if menu_status == 3:
+            user_input = dm_menu()
+            match user_input:
+                case 1:
+                    sys.exit(0)
+                
+                case 2:
+                    user_input_chrange_password()
+                    break
+            
 if __name__ == '__main__':
     main()

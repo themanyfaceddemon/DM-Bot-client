@@ -1,7 +1,14 @@
 from art import tprint
 
 
-def menu_address():
+def menu_address() -> int:
+    """Выводит следующее меню:
+    1. Ввести адрес
+    2. Завершить программу
+
+    Returns:
+        int: Номер выбранного пункта
+    """
     print("\n1. Ввести адрес")
     print("2. Завершить программу\n")
     try:
@@ -16,7 +23,14 @@ def menu_address():
     
     return choice
 
-def menu_auth():
+def menu_auth() -> int:
+    """Выводит следующее меню:
+    1. Зарегистрироваться
+    2. Авторизоваться
+
+    Returns:
+        int: Номер выбранного пункта
+    """
     print("\n1. Зарегистрироваться")
     print("2. Авторизоваться")
     print("3. Выйти\n")
@@ -32,7 +46,14 @@ def menu_auth():
     
     return choice
 
-def dm_menu():
+def dm_menu() -> int:
+    """Выводит следующее меню:
+    1. Выйти с системы
+    2. Сменить пароль
+
+    Returns:
+        int: Номер выбранного пункта
+    """
     print("\n1. Выйти с системы")
     print("2. Сменить пароль\n")
     try:
@@ -48,6 +69,8 @@ def dm_menu():
     return choice
 
 
-def display_title_screen():
+def display_title_screen() -> None:
+    """Выводит логотип на экран
+    """
     tprint("DM bot client")
     print('')
