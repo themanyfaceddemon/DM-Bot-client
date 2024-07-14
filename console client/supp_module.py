@@ -21,7 +21,7 @@ def register(str):
     }
     
     # Выполнение POST-запроса
-    response = requests.post(url, json=json)
+    response = requests.post(url+"/account/register", json=json)
     
     # Проверка успешности запроса
     if response.status_code == 200:
