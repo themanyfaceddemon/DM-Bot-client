@@ -3,7 +3,7 @@ import pickle
 import requests
 
 import console_menu
-import supp_module  # Предполагается, что у вас есть файл supp_module.py
+import supp_module
 
 ip = ""
 url = ""
