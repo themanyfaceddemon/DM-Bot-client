@@ -1,8 +1,7 @@
 import pickle
 
-import requests
-
 import console_menu
+import requests
 import supp_module
 
 ip = ""

@@ -1,7 +1,7 @@
 import os
+import pickle
 
 import requests
-import pickle
 
 url = ""
 
