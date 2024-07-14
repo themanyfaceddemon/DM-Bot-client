@@ -12,7 +12,8 @@ bin_file = "data_info.bin"
 data = {
     "ip": "gg",
     "login": "aga",
-    "password": "1234"
+    "password": "1234",
+    "token": "tyt"
 }
 
 
@@ -51,7 +52,7 @@ def main() -> None:
             if choice == 1:
                 # Регистрация
                 supp_module.register(url)  # TODO: доделать register() в supp_module.py
-                break
+                continue
             elif choice == 2:
                 # Вход
                 supp_module.login(url)  # TODO: доделать login() в supp_module.py

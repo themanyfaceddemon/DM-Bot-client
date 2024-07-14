@@ -1,4 +1,3 @@
-import getpass
 import os
 
 import requests
@@ -12,9 +11,24 @@ def register(str):
         loaded_dict = pickle.load(f)
         ip = loaded_dict[ip]
         url = f"http://{ip}"
-        response = requests.post(url)
     
+    login = str(input("Введите логин: "))
+    password = str(input("Введите пароль: "))
     
+    json = {
+        "login": f"{login}",
+        "password": f"{password}"
+    }
+    
+    # Выполнение POST-запроса
+    response = requests.post(url, json=json)
+    
+    # Проверка успешности запроса
+    if response.status_code == 200:
+        print(response.json())
+        print("Аккаунт успешно создан!")
+    else:
+        print(f"Ошибка: {response.status_code}")
     pass
 
 def login(str):
