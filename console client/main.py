@@ -4,9 +4,6 @@ import console_menu
 import requests
 import supp_module
 
-ip = ""
-url = ""
-credentials_file = 'credentials.ctgf'
 bin_file = "data_info.bin"
 data = {
     "ip": "gg",
@@ -14,7 +11,6 @@ data = {
     "password": "1234",
     "token": "tyt"
 }
-
 
 def main() -> None:
     console_menu.display_title_screen()
