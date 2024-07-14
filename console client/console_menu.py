@@ -22,5 +22,5 @@ def dm_menu():
 
 
 def display_title_screen():
-    tprint("DM_bot_client")
+    tprint("DM bot client")
     print('')
