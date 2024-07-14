@@ -39,9 +39,6 @@ def main() -> None:
         elif choice == 2:
             # Выход
             exit()
-        else:
-            print("Введено неверное действие!")
-            continue
 
         # 2. Регистрация, вход или выход
         while True:
@@ -57,8 +54,6 @@ def main() -> None:
             elif choice == 3:
                 # Выход
                 break
-            else:
-                print("Введено неверное действие!")
 
         # 3. Меню действий (только после успешного входа)
         if choice == 2:
@@ -70,8 +65,6 @@ def main() -> None:
                 elif choice == 2:
                     # Выход из учетной записи
                     break
-                else:
-                    print("Введено неверное действие!")
 
     # end main
     pass
