@@ -1,7 +1,9 @@
+import pickle
+
 import requests
+
 import console_menu
 import supp_module  # Предполагается, что у вас есть файл supp_module.py
-import pickle
 
 ip = ""
 url = ""
@@ -24,7 +26,7 @@ def main() -> None:
             # Ввод IP-адреса
             ip = str(input("Введите IP: "))
             url = f"http://{ip}"
-            response = requests.get(url + "/server/status")  # Предполагается, что endpoint "/status" доступен
+            response = requests.get(url + "/server/status")  # TODO: /server/status не робит
             if response.status_code == 200:
                 print("Соединение установлено.")
                 print(response.json())
@@ -48,11 +50,11 @@ def main() -> None:
             choice = int(input())
             if choice == 1:
                 # Регистрация
-                supp_module.register(url)  # Предполагается, что в supp_module.py есть функция register()
+                supp_module.register(url)  # TODO: доделать register() в supp_module.py
                 break
             elif choice == 2:
                 # Вход
-                supp_module.login(url)  # Предполагается, что в supp_module.py есть функция login()
+                supp_module.login(url)  # TODO: доделать login() в supp_module.py
                 break
             elif choice == 3:
                 # Выход
@@ -67,7 +69,7 @@ def main() -> None:
                 choice = int(input())
                 if choice == 1:
                     # Смена пароля
-                    supp_module.change_password(url)  # Предполагается, что в supp_module.py есть функция change_password()
+                    supp_module.change_password(url) # TODO: доделать change_password() в supp_module.py 
                 elif choice == 2:
                     # Выход из учетной записи
                     break
