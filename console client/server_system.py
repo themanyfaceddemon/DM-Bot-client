@@ -10,6 +10,9 @@ class ServerSystem:
     def __init__(self) -> None:
         self._session = requests.Session()
         self._url: str = "http://"
+        
+    def __del__(self):
+        self.logout()
     
     def setup_server_ip(self, ip: str) -> None:
         """Устанавливает IP-адрес сервера и проверяет его доступность.
