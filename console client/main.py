@@ -31,6 +31,7 @@ def user_input_ip() -> bool:
     
     return False
 
+
 def user_input_registration() -> bool:
     """Регистрация пользователя. Пользователь задает данные логина и пароля. 
     Пароль вводится повторно и проверяется.
@@ -39,18 +40,18 @@ def user_input_registration() -> bool:
         bool: True если регистрация прошла успешно
     """
     try:
-        user_login: str = input("Введите логин: ")
+        user_login_reg: str = input("Введите логин: ")
 
         while True:
-            user_password: str = input("Введите пароль: ")
-            user_password_2: str = input("Повторите пароль: ")
-            if user_password == user_password_2:
+            user_password_reg: str = input("Введите пароль: ")
+            user_password_reg_2: str = input("Повторите пароль: ")
+            if user_password_reg == user_password_reg_2:
                 break
             else:
                 print("Пароли не совпадают. Пожалуйста, попробуйте еще раз.")
 
-        server_system.register(user_login, user_password)
-        print("Регистрация прошла успешно")
+        server_system.register(user_login_reg, user_password_reg)
+        print("Регистрация выполнена успешно.")
         return True
     
     except ConnectionError as err:
@@ -61,14 +62,30 @@ def user_input_registration() -> bool:
     return False
     
 
-
-    # raise NotImplementedError(f"user_input_registration() not implemented yet")
-
 def user_input_login() -> bool:
-    raise NotImplementedError(f"user_input_login() not implemented yet")
+    # Ну я не уверена что тут все ок, как будто чего-то не хватает
+    """Логин в аккаунт пользователя. Вводит логин и пароль. 
+
+    Returns:
+        bool: True если логин выполнен успешно
+    """
+    try:
+        user_login: str = input("Введите логин: ")
+        user_password: str = input("Введите пароль: ")
+        server_system.login(user_login, user_password)
+        print("Логин выполнен успешно.")
+        return True
+    
+    except ConnectionError as err:
+        print(f"Возникла проблема при подключении к сети. Проверьте своё соединение. Подробная ошибка: {err}")
+    except Exception as err:
+        print(f"Произошла ошибка при попытке логина: {err}")
+    
+    return False
+    
 
 def user_input_change_password() -> None:
-    raise NotImplementedError(f"user_input_chrange_password() not implemented yet")
+    raise NotImplementedError(f"user_input_change_password() not implemented yet")
 
 def main() -> None:
     display_title_screen()
@@ -109,7 +126,7 @@ def main() -> None:
                     sys.exit(0)
                 
                 case 2:
-                    user_input_chrange_password()
+                    user_input_change_password()
                     break
             
 if __name__ == '__main__':
