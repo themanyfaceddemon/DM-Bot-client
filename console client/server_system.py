@@ -122,6 +122,14 @@ class ServerSystem:
         
         raise ValueError("Token not found in response")
 
+
+    def change_password(self, old_password: str, new_password: str) -> None:
+        payload = {
+        # Ну тут я и сдулась, ня пока
+            "password": old_password
+        }
+
+
     def logout(self) -> None:
         """Выход пользователя из системы.
 

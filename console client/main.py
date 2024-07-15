@@ -85,7 +85,16 @@ def user_input_login() -> bool:
     
 
 def user_input_change_password() -> None:
-    raise NotImplementedError(f"user_input_change_password() not implemented yet")
+    # Да тут тоже явно всё не так
+    try:
+        user_old_password: str = input("Введите пароль: ")
+        user_new_password: str = input("Введите новый пароль: ")
+        server_system.change_password(user_old_password, user_new_password)
+        print("Пароль успешно изменён.")
+
+    except ConnectionError as err:
+        print(f"Возникла проблема при подключении к сети. Проверьте своё соединение. Подробная ошибка: {err}")
+
 
 def main() -> None:
     display_title_screen()
