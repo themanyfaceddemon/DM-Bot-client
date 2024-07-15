@@ -13,7 +13,7 @@ def user_input_ip() -> bool:
     try:
         user_ip: str = input("Введите IP сервера: ")
         
-        # Защита от дурака. 
+        # Защита от дурака. / А если там вообще точек не поставят?
         # 127,0/0,1^5000 будет преобразовано в 127.0.0.1:5000
         user_ip = user_ip.translate(str.maketrans({
             ',': '.', 
@@ -32,12 +32,42 @@ def user_input_ip() -> bool:
     return False
 
 def user_input_registration() -> bool:
-    raise NotImplementedError(f"user_input_registration() not implemented yet")
+    """Регистрация пользователя. Пользователь задает данные логина и пароля. 
+    Пароль вводится повторно и проверяется.
+
+    Returns:
+        bool: True если регистрация прошла успешно
+    """
+    try:
+        user_login: str = input("Введите логин: ")
+
+        while True:
+            user_password: str = input("Введите пароль: ")
+            user_password_2: str = input("Повторите пароль: ")
+            if user_password == user_password_2:
+                break
+            else:
+                print("Пароли не совпадают. Пожалуйста, попробуйте еще раз.")
+
+        server_system.register(user_login, user_password)
+        print("Регистрация прошла успешно")
+        return True
+    
+    except ConnectionError as err:
+        print(f"Возникла проблема при подключении к сети. Проверьте своё соединение. Подробная ошибка: {err}")
+    except Exception as err:
+        print(f"Произошла ошибка при регистрации: {err}")
+    
+    return False
+    
+
+
+    # raise NotImplementedError(f"user_input_registration() not implemented yet")
 
 def user_input_login() -> bool:
     raise NotImplementedError(f"user_input_login() not implemented yet")
 
-def user_input_chrange_password() -> None:
+def user_input_change_password() -> None:
     raise NotImplementedError(f"user_input_chrange_password() not implemented yet")
 
 def main() -> None:
