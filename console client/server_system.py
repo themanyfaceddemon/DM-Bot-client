@@ -123,12 +123,24 @@ class ServerSystem:
         raise ValueError("Token not found in response")
 
 
-    def change_password(self, old_password: str, new_password: str) -> None:
-        payload = {
-        # Ну тут я и сдулась, ня пока
-            "password": old_password
-        }
+    def change_password(self, login: str, new_password: str) -> None:
+        """Изменяет пароль пользователя.
 
+        Args:
+            login (str): Логин пользователя, чей пароль будет изменен.
+            new_password (str): Новый пароль для пользователя.
+
+        Raises:
+            requests.exceptions.HTTPError: При возникновении HTTP ошибки.
+            requests.exceptions.RequestException: При возникновении ошибки запроса.
+        """
+        payload = {
+            "login": login,
+            "new_password": new_password
+        }
+        
+        response: requests.Response = self._session.post(f"{self._url}/account/change_user_password", json=payload)
+        response.raise_for_status()
 
     def logout(self) -> None:
         """Выход пользователя из системы.
