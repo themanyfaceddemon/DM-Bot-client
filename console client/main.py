@@ -67,7 +67,6 @@ def user_input_registration() -> bool:
     
 
 def user_input_login() -> bool:
-    # Ну я не уверена что тут все ок, как будто чего-то не хватает
     """Логин в аккаунт пользователя. Вводит логин и пароль. 
 
     Returns:
