@@ -89,6 +89,8 @@ def user_input_login() -> bool:
     
 
 def user_input_change_password() -> None:
+    """Меняет пароль пользователя
+    """
     try:
         user_login: str = input("Введите логин: ")
         user_new_password: str = input("Введите новый пароль: ")
