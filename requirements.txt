@@ -1,0 +1,4 @@
+art
+pillow
+pyyaml
+requests
