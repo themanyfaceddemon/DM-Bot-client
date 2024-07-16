@@ -8,8 +8,7 @@ def setup_server_content() -> None:
     """Проверяет наличие папки Sprites в корневом каталоге. При отсутствии- вызывает функцию server_system.download_server_texture() и распаковывает архив по пути результата этой функции. Удаялет архив после этого.
     """
     
-    root_dir = ROOT_PATH
-    sprites_dir = os.path.join(root_dir, 'Sprites')
+    sprites_dir = os.path.join(ROOT_PATH, 'Sprites')
     
     if not os.path.exists(sprites_dir):
         zip_path = server_system.download_server_texture()
