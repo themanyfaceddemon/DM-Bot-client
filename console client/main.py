@@ -13,8 +13,12 @@ def user_input_ip() -> bool:
     try:
         user_ip: str = input("Введите IP сервера: ")
         
-        # Защита от дурака. 
+        # Cain - Защита от дурака. 
         # 127,0/0,1^5000 будет преобразовано в 127.0.0.1:5000
+
+        # nixsilvam404 - А если там вообще точек не поставят?
+        
+        # Cain - Ну бля. Скилл ишью.
         user_ip = user_ip.translate(str.maketrans({
             ',': '.', 
             '/': '.', 
@@ -31,14 +35,70 @@ def user_input_ip() -> bool:
     
     return False
 
+
 def user_input_registration() -> bool:
-    raise NotImplementedError(f"user_input_registration() not implemented yet")
+    """Регистрация пользователя. Пользователь задает данные логина и пароля. 
+    Пароль вводится повторно и проверяется.
+
+    Returns:
+        bool: True если регистрация прошла успешно
+    """
+    try:
+        user_login_reg: str = input("Введите логин: ")
+
+        while True:
+            user_password_reg: str = input("Введите пароль: ")
+            user_password_reg_2: str = input("Повторите пароль: ")
+            if user_password_reg == user_password_reg_2:
+                break
+            else:
+                print("Пароли не совпадают. Пожалуйста, попробуйте еще раз.")
+
+        server_system.register(user_login_reg, user_password_reg)
+        print("Регистрация выполнена успешно.")
+        return True
+    
+    except ConnectionError as err:
+        print(f"Возникла проблема при подключении к сети. Проверьте своё соединение. Подробная ошибка: {err}")
+    except Exception as err:
+        print(f"Произошла ошибка при регистрации: {err}")
+    
+    return False
+    
 
 def user_input_login() -> bool:
-    raise NotImplementedError(f"user_input_login() not implemented yet")
+    # Ну я не уверена что тут все ок, как будто чего-то не хватает
+    """Логин в аккаунт пользователя. Вводит логин и пароль. 
 
-def user_input_chrange_password() -> None:
-    raise NotImplementedError(f"user_input_chrange_password() not implemented yet")
+    Returns:
+        bool: True если логин выполнен успешно
+    """
+    try:
+        user_login: str = input("Введите логин: ")
+        user_password: str = input("Введите пароль: ")
+        server_system.login(user_login, user_password)
+        print("Логин выполнен успешно.")
+        return True
+    
+    except ConnectionError as err:
+        print(f"Возникла проблема при подключении к сети. Проверьте своё соединение. Подробная ошибка: {err}")
+    except Exception as err:
+        print(f"Произошла ошибка при попытке логина: {err}")
+    
+    return False
+    
+
+def user_input_change_password() -> None:
+    # Да тут тоже явно всё не так
+    try:
+        user_old_password: str = input("Введите пароль: ")
+        user_new_password: str = input("Введите новый пароль: ")
+        server_system.change_password(user_old_password, user_new_password)
+        print("Пароль успешно изменён.")
+
+    except ConnectionError as err:
+        print(f"Возникла проблема при подключении к сети. Проверьте своё соединение. Подробная ошибка: {err}")
+
 
 def main() -> None:
     display_title_screen()
@@ -79,7 +139,7 @@ def main() -> None:
                     sys.exit(0)
                 
                 case 2:
-                    user_input_chrange_password()
+                    user_input_change_password()
                     break
             
 if __name__ == '__main__':

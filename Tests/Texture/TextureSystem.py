@@ -5,8 +5,9 @@ import shutil
 import unittest
 
 import yaml
-from Code.texture_manager import TextureSystem
 from PIL import Image
+
+from Code.texture_system import TextureSystem
 
 
 class TestTextureSystem(unittest.TestCase):

@@ -1,3 +1,4 @@
+import atexit
 import os
 
 import requests
@@ -6,13 +7,11 @@ import requests
 class ServerSystem:
     __slots__ = ['_session', '_url']
     DEFAULT_CHUNK_SIZE: int = 8192
-    
+
     def __init__(self) -> None:
         self._session = requests.Session()
         self._url: str = "http://"
-        
-    def __del__(self):
-        self.logout()
+        atexit.register(self.logout)
     
     def setup_server_ip(self, ip: str) -> None:
         """Устанавливает IP-адрес сервера и проверяет его доступность.
@@ -25,9 +24,9 @@ class ServerSystem:
         """
         if not self.check_connect(ip):
             raise ConnectionError(f"Unable to connect to server at {ip}")
-        
+
         self._url = f"http://{ip}"
-    
+
     def check_connect(self, ip: str) -> bool:
         """Проверяет доступность сервера.
 
@@ -38,10 +37,7 @@ class ServerSystem:
             bool: True, если сервер доступен (ответил с кодом 200), иначе False.
         """
         response = self._session.get(f"http://{ip}/server/status")
-        if response.status_code == 200:
-            return True
-        
-        return False
+        return response.status_code == 200
 
     def download_server_texture(self) -> str:
         """Загружает текстуры с сервера.
@@ -83,16 +79,16 @@ class ServerSystem:
             "login": login,
             "password": password
         }
-        
+
         response: requests.Response = self._session.post(f"{self._url}/account/register", json=payload)
         response.raise_for_status()
-        
+
         data = response.json()
-        
+
         if "token" in data:
             self._session.headers.update({"user_token": data["token"]})
             return
-        
+
         raise ValueError("Token not found in response")
 
     def login(self, login: str, password: str) -> None:
@@ -110,17 +106,36 @@ class ServerSystem:
             "login": login,
             "password": password
         }
-        
+
         response: requests.Response = self._session.post(f"{self._url}/account/login", json=payload)
         response.raise_for_status()
-        
+
         data = response.json()
-        
+
         if "token" in data:
             self._session.headers.update({"user_token": data["token"]})
             return
-        
+
         raise ValueError("Token not found in response")
+
+    def change_password(self, login: str, new_password: str) -> None:
+        """Изменяет пароль пользователя.
+
+        Args:
+            login (str): Логин пользователя, чей пароль будет изменен.
+            new_password (str): Новый пароль для пользователя.
+
+        Raises:
+            requests.exceptions.HTTPError: При возникновении HTTP ошибки.
+            requests.exceptions.RequestException: При возникновении ошибки запроса.
+        """
+        payload = {
+            "login": login,
+            "new_password": new_password
+        }
+
+        response: requests.Response = self._session.post(f"{self._url}/account/change_user_password", json=payload)
+        response.raise_for_status()
 
     def logout(self) -> None:
         """Выход пользователя из системы.
