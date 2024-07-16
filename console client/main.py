@@ -89,11 +89,10 @@ def user_input_login() -> bool:
     
 
 def user_input_change_password() -> None:
-    # Да тут тоже явно всё не так
     try:
-        user_old_password: str = input("Введите пароль: ")
+        user_login: str = input("Введите логин: ")
         user_new_password: str = input("Введите новый пароль: ")
-        server_system.change_password(user_old_password, user_new_password)
+        server_system.change_password(user_login, user_new_password)
         print("Пароль успешно изменён.")
 
     except ConnectionError as err:
