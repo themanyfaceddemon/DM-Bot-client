@@ -59,7 +59,7 @@ class ServerSystem:
         Raises:
             ConnectionError: Если сервер недоступен.
         """
-        if not self.check_connect(ip):
+        if not self.check_connect(ip) or not ip:
             raise ConnectionError(f"Unable to connect to server at {ip}")
 
         self._url = f"http://{ip}"
