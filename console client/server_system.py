@@ -1,7 +1,9 @@
 import atexit
 import os
-
 import requests
+from root_path import ROOT_PATH
+import zipfile
+import shutil
 
 
 class AccessError(Exception):
@@ -74,11 +76,8 @@ class ServerSystem:
         response = self._session.get(f"http://{ip}/server/status")
         return response.status_code == 200
 
-    def download_server_texture(self) -> str:
-        """Загружает текстуры с сервера.
-
-        Returns:
-            str: Путь до архива с текстурами.
+    def download_server_texture(self) -> None:
+        """Загружает текстуры с сервера. 
 
         Raises:
             requests.exceptions.HTTPError: Если запрос к серверу завершился ошибкой.
@@ -88,6 +87,7 @@ class ServerSystem:
         ServerSystem._code_error_processing(response)
 
         archive_path = "sprites.zip"
+        sprites_dir = os.path.join(ROOT_PATH, 'Sprites')
 
         try:
             with open(archive_path, 'wb') as file:
@@ -97,7 +97,14 @@ class ServerSystem:
         except IOError as e:
             raise IOError(f"Error saving file: {e}")
 
-        return os.path.abspath(archive_path)
+        if os.path.exists(sprites_dir):
+            shutil.rmtree(sprites_dir)
+
+        with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+            zip_ref.extractall(sprites_dir)
+
+        os.remove(archive_path)
+
 
     def register(self, login: str, password: str) -> None:
         """Регистрация пользователя на сервере.
