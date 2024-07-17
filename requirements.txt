@@ -1,4 +1,5 @@
 art
 pillow
+pyqt6
 pyyaml
 requests

@@ -1,7 +1,8 @@
 import os
 import zipfile
-from server_system_setup import server_system
+
 from root_path import ROOT_PATH
+from main_impt import server_system
 
 
 def setup_server_content() -> None:
