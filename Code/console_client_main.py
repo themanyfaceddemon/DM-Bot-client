@@ -1,6 +1,6 @@
 import sys
 
-from main_impt import server_system
+from systems.networck import ClientUnit
 
 
 def menu_address() -> int:
@@ -85,6 +85,8 @@ def user_input_ip() -> bool:
     Returns:
         bool: True если ip валиден
     """
+    client_unit = ClientUnit()
+    
     try:
         user_ip: str = input("Введите IP сервера: ")
         
@@ -99,8 +101,7 @@ def user_input_ip() -> bool:
             '/': '.', 
             '^': ':'
         }))
-        
-        server_system.setup_server_ip(user_ip)
+        client_unit.check_ip(user_ip)
         # TODO: Сохранение IP сервера
         
         return True
@@ -118,6 +119,8 @@ def user_input_registration() -> bool:
     Returns:
         bool: True если регистрация прошла успешно
     """
+    client_unit = ClientUnit()
+    
     try:
         user_login_reg: str = input("Введите логин: ")
 
@@ -126,15 +129,16 @@ def user_input_registration() -> bool:
             user_password_reg_2: str = input("Повторите пароль: ")
             if user_password_reg == user_password_reg_2:
                 break
-            else:
-                print("Пароли не совпадают. Пожалуйста, попробуйте еще раз.")
-
-        server_system.register(user_login_reg, user_password_reg)
+            
+            print("Пароли не совпадают. Пожалуйста, попробуйте еще раз.")
+        
+        client_unit.register(user_login_reg, user_password_reg)
         print("Регистрация выполнена успешно.")
         return True
     
     except ConnectionError as err:
         print(f"Возникла проблема при подключении к сети. Проверьте своё соединение. Подробная ошибка: {err}")
+    
     except Exception as err:
         print(f"Произошла ошибка при регистрации: {err}")
     
@@ -147,10 +151,12 @@ def user_input_login() -> bool:
     Returns:
         bool: True если логин выполнен успешно
     """
+    client_unit = ClientUnit()
+    
     try:
         user_login: str = input("Введите логин: ")
         user_password: str = input("Введите пароль: ")
-        server_system.login(user_login, user_password)
+        client_unit.login(user_login, user_password)
         print("Логин выполнен успешно.")
         return True
     
@@ -165,10 +171,11 @@ def user_input_login() -> bool:
 def user_input_change_password() -> None:
     """Меняет пароль пользователя
     """
+    client_unit = ClientUnit()
+    
     try:
-        user_login: str = input("Введите логин: ")
         user_new_password: str = input("Введите новый пароль: ")
-        server_system.change_password(user_login, user_new_password)
+        client_unit.change_password(user_new_password)
         print("Пароль успешно изменён.")
 
     except ConnectionError as err:
