@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import os
 import shutil
 import zipfile
@@ -10,6 +9,7 @@ import requests
 import websockets
 from root_path import ROOT_PATH
 from systems.decorators import global_class
+from systems.events import EventManager
 
 
 @global_class
@@ -80,23 +80,19 @@ class ClientUnit:
             token = response.json()["token"]
             self._session.headers.update({"Authorization": token})
             self._token = token
-            logging.debug("Login successful, token acquired")
 
     # --- Admin API --- #
     def change_password(self, new_password: str) -> None:
         response = self._session.post(f"http://{self._ip}/admin/change_password", json={'new_password': new_password})
         response.raise_for_status()
-        logging.debug("Password changed successfully")
     
     def change_access(self, login: str, new_access: Dict[str, bool]) -> None:
         response = self._session.post(f"http://{self._ip}/admin/change_access", json={'login': login, 'new_access': new_access})
         response.raise_for_status()
-        logging.debug("Access changed successfully")
     
     def delete_user(self, login: str) -> None:
         response = self._session.post(f"http://{self._ip}/admin/delete_user", json={'login': login})
         response.raise_for_status()
-        logging.debug("User deleted successfully")
     
     # --- WebSocket work --- #
     async def connect(self) -> None:
@@ -104,7 +100,6 @@ class ClientUnit:
             raise ConnectionError("Token is not available. Please log in first.")
         
         self._websocket = await websockets.connect(f"ws://{self._ip}/connect", extra_headers={"Authorization": self._token})
-        logging.debug("WebSocket connected")
 
     async def send_data(self, data: Dict[str, Any]) -> None:
         if self._websocket is None:
@@ -112,19 +107,20 @@ class ClientUnit:
         
         packed_data = ClientUnit.pack_data(data)
         await self._websocket.send(packed_data)
-        logging.debug(f"Sent: {data}")
 
     async def _handle_data(self) -> None:
+        event_manager = EventManager()
+        
         try:
             while self._running:
                 response = await self._websocket.recv()
                 decoded_response = ClientUnit.unpack_data(response)
-                # Обработка полученного сообщения
-                logging.debug(f"Handling message: {decoded_response}")
-                # TODO: Менеджер ивентов
+                event_type = decoded_response.get("ev_type")
+
+                await event_manager.call_event(event_type, **decoded_response)
         
         except websockets.ConnectionClosed:
-            logging.debug("WebSocket connection closed")
+            pass
         
         finally:
             self._running = False
@@ -144,4 +140,3 @@ class ClientUnit:
         if self._websocket is not None:
             await self._websocket.close()
             self._websocket = None
-            logging.debug("WebSocket connection closed")
