@@ -1,8 +1,7 @@
 import sys
 
+from GUI.windows.main import MainWindow  # type: ignore
 from PyQt6.QtWidgets import QApplication
-
-from GUI.windows.main import MainWindow # type: ignore
 
 if __name__ == "__main__":
     app = QApplication([])
