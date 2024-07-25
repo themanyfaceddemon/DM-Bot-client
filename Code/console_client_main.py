@@ -1,6 +1,7 @@
+import asyncio
 import sys
 
-from systems.networck import ClientUnit
+from systems.network import ClientUnit
 
 
 def menu_address() -> int:
@@ -52,15 +53,27 @@ def dm_menu() -> int:
     """Выводит следующее меню:
     1. Выйти с системы
     2. Сменить пароль
+    3. Сменить доступ пользователя
+    4. Удалить пользователя
+    5. Скачать контент с сервера
+    6. Подключиться через WebSocket
+    7. Отправить данные через WebSocket
+    8. Отключиться от WebSocket
 
     Returns:
         int: Номер выбранного пункта
     """
     print("\n1. Выйти с системы")
-    print("2. Сменить пароль\n")
+    print("2. Сменить пароль")
+    print("3. Сменить доступ пользователя")
+    print("4. Удалить пользователя")
+    print("5. Скачать контент с сервера")
+    print("6. Подключиться через WebSocket")
+    print("7. Отправить данные через WebSocket")
+    print("8. Отключиться от WebSocket\n")
     try:
         choice = int(input("Введите действие: "))
-        if choice not in (1, 2):
+        if choice not in range(1, 9):
             print("Выбрано неверное действие!")
             return dm_menu()
         
@@ -79,14 +92,12 @@ def display_title_screen() -> None:
     print('')
 
 
-def user_input_ip() -> bool:
+def user_input_ip(client_unit: ClientUnit) -> bool:
     """Ввод IP пользователем
 
     Returns:
         bool: True если ip валиден
     """
-    client_unit = ClientUnit()
-    
     try:
         user_ip: str = input("Введите IP сервера: ")
         
@@ -101,10 +112,9 @@ def user_input_ip() -> bool:
             '/': '.', 
             '^': ':'
         }))
-        client_unit.check_ip(user_ip)
-        # TODO: Сохранение IP сервера
-        
-        return True
+        if client_unit.check_ip(user_ip):
+            print("IP-адрес успешно проверен.")
+            return True
         
     except ConnectionError as err:
         print(f"Ошибка при подключении к {user_ip}. Ошибка: {err}")
@@ -112,15 +122,13 @@ def user_input_ip() -> bool:
     return False
 
 
-def user_input_registration() -> bool:
+def user_input_registration(client_unit: ClientUnit) -> bool:
     """Регистрация пользователя. Пользователь задает данные логина и пароля. 
     Пароль вводится повторно и проверяется.
 
     Returns:
         bool: True если регистрация прошла успешно
     """
-    client_unit = ClientUnit()
-    
     try:
         user_login_reg: str = input("Введите логин: ")
 
@@ -145,14 +153,12 @@ def user_input_registration() -> bool:
     return False
     
 
-def user_input_login() -> bool:
+def user_input_login(client_unit: ClientUnit) -> bool:
     """Логин в аккаунт пользователя. Вводит логин и пароль. 
 
     Returns:
         bool: True если логин выполнен успешно
     """
-    client_unit = ClientUnit()
-    
     try:
         user_login: str = input("Введите логин: ")
         user_password: str = input("Введите пароль: ")
@@ -162,17 +168,16 @@ def user_input_login() -> bool:
     
     except ConnectionError as err:
         print(f"Возникла проблема при подключении к сети. Проверьте своё соединение. Подробная ошибка: {err}")
+    
     except Exception as err:
         print(f"Произошла ошибка при попытке логина: {err}")
     
     return False
     
 
-def user_input_change_password() -> None:
+def user_input_change_password(client_unit: ClientUnit) -> None:
     """Меняет пароль пользователя
     """
-    client_unit = ClientUnit()
-    
     try:
         user_new_password: str = input("Введите новый пароль: ")
         client_unit.change_password(user_new_password)
@@ -182,7 +187,80 @@ def user_input_change_password() -> None:
         print(f"Возникла проблема при подключении к сети. Проверьте своё соединение. Подробная ошибка: {err}")
 
 
+def user_input_change_access(client_unit: ClientUnit) -> None:
+    """Меняет доступ пользователя
+    """
+    try:
+        user_login: str = input("Введите логин пользователя: ")
+        access_rights = input("Введите новые права доступа в формате 'key1:True,key2:False': ")
+        new_access = {k: v == 'True' for k, v in (item.split(':') for item in access_rights.split(','))}
+        client_unit.change_access(user_login, new_access)
+        print("Права доступа успешно изменены.")
+
+    except ConnectionError as err:
+        print(f"Возникла проблема при подключении к сети. Проверьте своё соединение. Подробная ошибка: {err}")
+
+
+def user_input_delete_user(client_unit: ClientUnit) -> None:
+    """Удаляет пользователя
+    """
+    try:
+        user_login: str = input("Введите логин пользователя: ")
+        client_unit.delete_user(user_login)
+        print("Пользователь успешно удален.")
+
+    except ConnectionError as err:
+        print(f"Возникла проблема при подключении к сети. Проверьте своё соединение. Подробная ошибка: {err}")
+
+
+def user_input_download_content(client_unit: ClientUnit) -> None:
+    """Скачивает контент с сервера
+    """
+    try:
+        client_unit.download_server_content()
+        print("Контент успешно скачан.")
+
+    except ConnectionError as err:
+        print(f"Возникла проблема при подключении к сети. Проверьте своё соединение. Подробная ошибка: {err}")
+
+
+async def user_input_connect_ws(client_unit: ClientUnit) -> None:
+    """Подключается к WebSocket
+    """
+    try:
+        await client_unit.connect()
+        print("WebSocket подключен.")
+
+    except ConnectionError as err:
+        print(f"Возникла проблема при подключении к сети. Проверьте своё соединение. Подробная ошибка: {err}")
+
+
+async def user_input_send_ws_data(client_unit: ClientUnit) -> None:
+    """Отправляет данные через WebSocket
+    """
+    try:
+        data = input("Введите данные в формате 'key1:value1,key2:value2': ")
+        data_dict = {k: v for k, v in (item.split(':') for item in data.split(','))}
+        await client_unit.send_data(data_dict)
+        print("Данные успешно отправлены через WebSocket.")
+
+    except ConnectionError as err:
+        print(f"Возникла проблема при подключении к сети. Проверьте своё соединение. Подробная ошибка: {err}")
+
+
+async def user_input_disconnect_ws(client_unit: ClientUnit) -> None:
+    """Отключается от WebSocket
+    """
+    try:
+        await client_unit.disconnect()
+        print("WebSocket отключен.")
+
+    except ConnectionError as err:
+        print(f"Возникла проблема при подключении к сети. Проверьте своё соединение. Подробная ошибка: {err}")
+
+
 def main() -> None:
+    client_unit = ClientUnit()
     display_title_screen()
     menu_status: int = 1
     
@@ -191,7 +269,7 @@ def main() -> None:
             user_input = menu_address()
             match user_input:
                 case 1:
-                    if user_input_ip():
+                    if user_input_ip(client_unit):
                         menu_status = 2
                     continue
                 
@@ -202,14 +280,17 @@ def main() -> None:
             user_input = menu_auth()
             match user_input:
                 case 1:
-                    if user_input_registration():
+                    if user_input_registration(client_unit):
                         menu_status = 3
                     continue
                 
                 case 2:
-                    if user_input_login():
+                    if user_input_login(client_unit):
                         menu_status = 3
                     continue
+                
+                case 3:
+                    sys.exit(0)
         
         if menu_status == 3:
             user_input = dm_menu()
@@ -218,7 +299,31 @@ def main() -> None:
                     sys.exit(0)
                 
                 case 2:
-                    user_input_change_password()
+                    user_input_change_password(client_unit)
+                    continue
+                
+                case 3:
+                    user_input_change_access(client_unit)
+                    continue
+                
+                case 4:
+                    user_input_delete_user(client_unit)
+                    continue
+                
+                case 5:
+                    user_input_download_content(client_unit)
+                    continue
+                
+                case 6:
+                    asyncio.run(user_input_connect_ws(client_unit))
+                    continue
+                
+                case 7:
+                    asyncio.run(user_input_send_ws_data(client_unit))
+                    continue
+                
+                case 8:
+                    asyncio.run(user_input_disconnect_ws(client_unit))
                     continue
 
             
