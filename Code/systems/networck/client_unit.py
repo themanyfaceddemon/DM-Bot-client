@@ -17,9 +17,8 @@ class ClientUnit:
     __slots__ = ['_ip', '_session', '_token', '_websocket', '_running']
     DEFAULT_CHUNK_SIZE: int = 8192
     
-    def __init__(self, ip: str) -> None:
-        self._ip: str = ip
-        self.check_ip()
+    def __init__(self) -> None:
+        self._ip: str = None
         
         self._session: requests.Session = requests.Session()
         self._token: Optional[str] = None
@@ -36,8 +35,11 @@ class ClientUnit:
         return msgpack.unpackb(data, raw=False)
 
     # --- Server API --- #
-    def check_ip(self) -> bool:
+    def check_ip(self, ip: str) -> bool:
+        self._ip = ip
         response = self._session.get(f"http://{self._ip}/server/check_status")
+        response.raise_for_status()
+        
         return response.status_code == 200
     
     def download_server_content(self) -> None:
@@ -81,6 +83,11 @@ class ClientUnit:
             self._session.headers.update({"Authorization": token})
             self._token = token
 
+    def logout(self) -> None:
+        response = self._session.post(f"http://{self._ip}/auth/logout")
+        self._session.headers.update({"Authorization": None})
+        response.raise_for_status()
+    
     # --- Admin API --- #
     def change_password(self, new_password: str) -> None:
         response = self._session.post(f"http://{self._ip}/admin/change_password", json={'new_password': new_password})
