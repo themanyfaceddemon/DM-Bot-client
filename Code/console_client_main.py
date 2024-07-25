@@ -184,8 +184,7 @@ def user_input_change_password() -> None:
 
 def main() -> None:
     display_title_screen()
-    menu_status: int
-    user_input: int
+    menu_status: int = 1
     
     while True:
         if menu_status == 1:
@@ -194,25 +193,23 @@ def main() -> None:
                 case 1:
                     if user_input_ip():
                         menu_status = 2
-                    break
+                    continue
                 
                 case 2:
                     sys.exit(0)
-
-
+        
         if menu_status == 2:
             user_input = menu_auth()
             match user_input:
                 case 1:
                     if user_input_registration():
                         menu_status = 3
-                    break
+                    continue
                 
                 case 2:
                     if user_input_login():
                         menu_status = 3
-                    break
-        
+                    continue
         
         if menu_status == 3:
             user_input = dm_menu()
@@ -222,7 +219,8 @@ def main() -> None:
                 
                 case 2:
                     user_input_change_password()
-                    break
+                    continue
+
             
 if __name__ == '__main__':
     main()
