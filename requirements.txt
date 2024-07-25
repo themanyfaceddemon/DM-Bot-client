@@ -1,5 +1,7 @@
 art
-pillow
-pyqt6
-pyyaml
+msgpack
+Pillow
+PyQt6
+PyYAML
 requests
+websockets
