@@ -1,5 +1,7 @@
 import asyncio
+import atexit
 import socket
+import threading
 from typing import Any, Dict, Optional, Tuple
 
 import msgpack
@@ -10,7 +12,7 @@ from systems.events_system import EventManager
 
 @global_class
 class ClientUnit:
-    __slots__ = ['_http_url', '_socket_url', '_session', '_token', '_socket', '_bg_processing', '_bg_task']
+    __slots__ = ['_http_url', '_socket_url', '_session', '_token', '_socket', '_bg_processing', '_bg_thread']
     SOKET_CHUNK_SIZE: int = 8192
     DEFAULT_DOWNLOAD_CHUNK_SIZE: int = 8192
     
@@ -21,7 +23,10 @@ class ClientUnit:
         self._token: Optional[str] = None
         self._socket: Optional[socket.socket] = None
         self._bg_processing: bool = False
-        self._bg_task: Optional[asyncio.Task] = None
+        self._bg_thread: Optional[threading.Thread] = None
+        
+        atexit.register(self.disconnect)
+        atexit.register(self.logout)
     
     # --- Net data --- #
     @staticmethod
@@ -102,6 +107,10 @@ class ClientUnit:
             data: dict = await asyncio.get_event_loop().run_in_executor(None, self.recv_data)
             await ev_manager.call_event(event_name=data.get('ev_type', None), **data)
     
+    def _start_event_loop(self, loop: asyncio.AbstractEventLoop) -> None:
+        asyncio.set_event_loop(loop)
+        loop.run_forever()
+    
     def start_bg_processing(self) -> None:
         if self._socket is None:
             raise ConnectionError("Socket connection is not established")
@@ -110,14 +119,21 @@ class ClientUnit:
             raise ValueError("Background processing is already running")
         
         self._bg_processing = True
-        self._bg_task = asyncio.create_task(self.bg_receive())
+        
+        loop = asyncio.new_event_loop()
+        self._bg_thread = threading.Thread(target=self._start_event_loop, args=(loop,), daemon=True)
+        self._bg_thread.start()
+        
+        asyncio.run_coroutine_threadsafe(self.bg_receive(), loop)
 
     def stop_bg_processing(self) -> None:
         if self._bg_processing:
             self._bg_processing = False
-            if self._bg_task is not None:
-                self._bg_task.cancel()
-                self._bg_task = None
+            if self._bg_thread is not None:
+                loop = asyncio.get_event_loop()
+                loop.call_soon_threadsafe(loop.stop)
+                self._bg_thread.join()
+                self._bg_thread = None
         
     def disconnect(self) -> None:
         self.stop_bg_processing()

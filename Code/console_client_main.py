@@ -1,5 +1,8 @@
+import logging
 import sys
+from logging.config import dictConfig
 
+from systems.events_system import register_ev
 from systems.network import ClientUnit
 
 
@@ -221,13 +224,36 @@ def user_input_download_content(client_unit: ClientUnit) -> None:
 
 def test_soket(client_unit: ClientUnit):
     client_unit.connect()
-    client_unit.send_data({"ev_type": "echo", "data": "fuck"})
+    client_unit.start_bg_processing()
+    print("Вы отправили серверу: fuck u")
+    client_unit.send_data({"ev_type": "echo", "data": "fuck u"})
 
 def main() -> None:
+    dictConfig({
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'default': {
+                'format': '[%(asctime)s] [%(levelname)s] %(name)s: %(message)s',
+            },
+        },
+        'handlers': {
+            'default': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'default',
+            },
+        },
+        'root': {
+            'level': logging.INFO,
+            'handlers': ['default'],
+        },
+    })
+    
     client_unit: ClientUnit = ClientUnit.get_instance()
     display_title_screen()
     menu_status: int = 1
-    
+    register_ev()
+
     while True:
         try:
             if menu_status == 1:
