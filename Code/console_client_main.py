@@ -105,6 +105,9 @@ def user_input_ip(client_unit: ClientUnit) -> bool:
     try:
         user_ip: str = input("Введите IP сервера (ТОЛЬКО IP!): ")
         
+        if not user_ip:
+            user_ip = "127.0.0.1"
+        
         if client_unit.check_server(user_ip):
             print("IP-адрес успешно проверен.")
             return True
@@ -218,7 +221,6 @@ def user_input_download_content(client_unit: ClientUnit) -> None:
 
 def test_soket(client_unit: ClientUnit):
     client_unit.connect()
-    client_unit.handle_data()
     client_unit.send_data({"ev_type": "echo", "data": "fuck"})
 
 def main() -> None:
