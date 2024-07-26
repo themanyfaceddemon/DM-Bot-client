@@ -224,7 +224,7 @@ def test_soket(client_unit: ClientUnit):
     client_unit.send_data({"ev_type": "echo", "data": "fuck"})
 
 def main() -> None:
-    client_unit = ClientUnit()
+    client_unit: ClientUnit = ClientUnit.get_instance()
     display_title_screen()
     menu_status: int = 1
     

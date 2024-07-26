@@ -1,15 +1,17 @@
 import asyncio
-import logging
 import socket
 from typing import Any, Dict, Optional, Tuple
 
 import msgpack
 import requests
+from systems.decorators import global_class
+from systems.events_system import EventManager
 
-logger = logging.getLogger("Client Unit")
 
+@global_class
 class ClientUnit:
-    DEFAULT_CHUNK_SIZE: int = 8192
+    __slots__ = ['_http_url', '_socket_url', '_session', '_token', '_socket', '_bg_processing', '_bg_task']
+    DEFAULT_DOWNLOAD_CHUNK_SIZE: int = 8192
     
     def __init__(self) -> None:
         self._http_url: str = ""
@@ -17,6 +19,8 @@ class ClientUnit:
         self._session: requests.Session = requests.Session()
         self._token: Optional[str] = None
         self._socket: Optional[socket.socket] = None
+        self._bg_processing: bool = False
+        self._bg_task: Optional[asyncio.Task] = None
     
     # --- Net data --- #
     @staticmethod
@@ -68,7 +72,6 @@ class ClientUnit:
         
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect(self._socket_url)
-        logger.info(f"Connected to server at {self._socket_url}")
         
         self._socket.sendall(self._token.encode('utf-8'))
         
@@ -83,9 +86,41 @@ class ClientUnit:
         
         packed_data = ClientUnit.pack_data(data)
         self._socket.sendall(packed_data)
-        logger.debug(f"Sent data: {data}")
 
+    def recv_data(self, buffer: int = 8192) -> Dict[str, Any]:
+        if self._socket is None:
+            raise ConnectionError("Socket connection is not established")
+        
+        response = self._socket.recv(buffer)
+        return ClientUnit.unpack_data(response)
+    
+    async def bg_receive(self) -> None:
+        ev_manager: EventManager = EventManager.get_instance()
+        
+        while self._bg_processing:
+            data: dict = await asyncio.get_event_loop().run_in_executor(None, self.recv_data)
+            await ev_manager.call_event(event_name=data.get('ev_type', None), **data)
+    
+    def start_bg_processing(self) -> None:
+        if self._socket is None:
+            raise ConnectionError("Socket connection is not established")
+        
+        if self._bg_processing:
+            raise ValueError("Background processing is already running")
+        
+        self._bg_processing = True
+        self._bg_task = asyncio.create_task(self.bg_receive())
+
+    def stop_bg_processing(self) -> None:
+        if self._bg_processing:
+            self._bg_processing = False
+            if self._bg_task is not None:
+                self._bg_task.cancel()
+                self._bg_task = None
+        
     def disconnect(self) -> None:
+        self.stop_bg_processing()
+        
         if self._socket is not None:
             self._socket.close()
             self._socket = None
