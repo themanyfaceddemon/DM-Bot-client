@@ -11,6 +11,7 @@ from systems.events_system import EventManager
 @global_class
 class ClientUnit:
     __slots__ = ['_http_url', '_socket_url', '_session', '_token', '_socket', '_bg_processing', '_bg_task']
+    SOKET_CHUNK_SIZE: int = 8192
     DEFAULT_DOWNLOAD_CHUNK_SIZE: int = 8192
     
     def __init__(self) -> None:
@@ -76,7 +77,7 @@ class ClientUnit:
         self._socket.sendall(self._token.encode('utf-8'))
         
         # Ждем подтверждения токена
-        response = self._socket.recv(1024)
+        response = self._socket.recv(self.SOKET_CHUNK_SIZE)
         if response != b"Token accepted":
             raise ConnectionError("Token was not accepted by the server")
 
@@ -87,11 +88,11 @@ class ClientUnit:
         packed_data = ClientUnit.pack_data(data)
         self._socket.sendall(packed_data)
 
-    def recv_data(self, buffer: int = 8192) -> Dict[str, Any]:
+    def recv_data(self) -> Dict[str, Any]:
         if self._socket is None:
             raise ConnectionError("Socket connection is not established")
         
-        response = self._socket.recv(buffer)
+        response = self._socket.recv(self.SOKET_CHUNK_SIZE)
         return ClientUnit.unpack_data(response)
     
     async def bg_receive(self) -> None:
