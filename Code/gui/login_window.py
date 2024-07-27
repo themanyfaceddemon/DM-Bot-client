@@ -3,7 +3,7 @@ import os
 from gui.main_window import MainApplicationWindow
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import (QDialog, QLabel, QLineEdit, QMainWindow,
-                             QMessageBox, QPushButton)
+                             QMessageBox, QProgressBar, QPushButton)
 from PyQt6.uic import loadUi
 from root_path import ROOT_PATH
 from systems.decorators import global_class
@@ -84,34 +84,37 @@ class LoginWindow(QMainWindow):
     def set_buttons(self, value: bool):
         self.login_button.setEnabled(value)
         self.register_button.setEnabled(value)
-    
+
     def is_valid_ip(self, ip: str) -> bool:
         parts = ip.split('.')
         if len(parts) != 4:
             return False
-        
+
         for part in parts:
             if not part.isdigit():
                 return False
-            
+
             if not 0 <= int(part) <= 255:
                 return False
-        
+
         return True
 
     def is_valid_port(self, port: str) -> bool:
         if not port.isdigit():
             return False
-        
+
         port_num = int(port)
         return 1 <= port_num <= 65535
 
+    def run_download_server_content(self) -> None:
+        download_dialog = ServerContentDownloadDialog(self)
+        download_dialog.exec()
+    
     def run_main_app(self) -> None:
         self.close()
         self.main_window: MainApplicationWindow = MainApplicationWindow.get_instance()
         self.main_window.show()
-    
-    
+
 class AuthDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -141,7 +144,7 @@ class AuthDialog(QDialog):
 
     def close_current_and_open_main_window(self):
         self.close()
-        self.parent().run_main_app()
+        self.parent().run_download_server_content()
 
 class RegistrationDialog(QDialog):
     def __init__(self, parent=None):
@@ -177,4 +180,21 @@ class RegistrationDialog(QDialog):
 
     def close_current_and_open_main_window(self):
         self.close()
+        self.parent().run_download_server_content()
+
+
+class ServerContentDownloadDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        loadUi(os.path.join(ROOT_PATH, 'GUI', 'windows', 'ServerContentDownloadDialog.ui'), self)
+
+        self.progress_bar = self.findChild(QProgressBar, 'progressBar')
+
+        cl_unit: ClientUnit = ClientUnit.get_instance()
+        cl_unit.download_server_content(self.update_progress)
+        self.close()
         self.parent().run_main_app()
+
+    def update_progress(self, downloaded_size, total_size):
+        self.progress_bar.setMaximum(total_size)
+        self.progress_bar.setValue(downloaded_size)
