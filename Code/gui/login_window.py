@@ -8,7 +8,7 @@ from PyQt6.uic import loadUi
 from root_path import ROOT_PATH
 from systems.decorators import global_class
 from systems.network import ClientUnit
-
+from PyQt6.QtCore import QThread, pyqtSignal
 
 @global_class
 class LoginWindow(QMainWindow):
@@ -182,6 +182,18 @@ class RegistrationDialog(QDialog):
         self.close()
         self.parent().run_download_server_content()
 
+class DownloadThread(QThread):
+    progress_updated = pyqtSignal(int, int)
+
+    def __init__(self):
+        super().__init__()
+
+    def run(self):
+        cl_unit: ClientUnit = ClientUnit.get_instance()
+        cl_unit.download_server_content(self.report_progress)
+
+    def report_progress(self, downloaded_size, total_size):
+        self.progress_updated.emit(downloaded_size, total_size)
 
 class ServerContentDownloadDialog(QDialog):
     def __init__(self, parent=None):
@@ -189,12 +201,17 @@ class ServerContentDownloadDialog(QDialog):
         loadUi(os.path.join(ROOT_PATH, 'GUI', 'windows', 'ServerContentDownloadDialog.ui'), self)
 
         self.progress_bar = self.findChild(QProgressBar, 'progressBar')
-
-        cl_unit: ClientUnit = ClientUnit.get_instance()
-        cl_unit.download_server_content(self.update_progress)
-        self.close()
-        self.parent().run_main_app()
+        
+        self.download_thread = DownloadThread()
+        self.download_thread.progress_updated.connect(self.update_progress)
+        self.download_thread.start()
 
     def update_progress(self, downloaded_size, total_size):
         self.progress_bar.setMaximum(total_size)
         self.progress_bar.setValue(downloaded_size)
+
+        if downloaded_size >= total_size:
+            self.download_thread.quit()
+            self.download_thread.wait()
+            self.close()
+            self.parent().run_main_app()
