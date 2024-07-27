@@ -1,11 +1,15 @@
 import asyncio
 import atexit
+import os
+import shutil
 import socket
 import threading
+import zipfile
 from typing import Any, Dict, Optional, Tuple
 
 import msgpack
 import requests
+from root_path import ROOT_PATH
 from systems.decorators import global_class
 from systems.events_system import EventManager
 
@@ -47,6 +51,28 @@ class ClientUnit:
             server_info = response_data.get("server_info", {})
             self._http_url = temp_http_url
             self._socket_url = (ip, server_info.get("socket_port"))
+
+    def download_server_content(self) -> None:
+            response = self._session.get(f"{self._http_url}/server/download_server_content", stream=True)
+
+            archive_path = "content.zip"
+            content_dir = os.path.join(ROOT_PATH, 'Content')
+
+            try:
+                with open(archive_path, 'wb') as file:
+                    for chunk in response.iter_content(chunk_size=self.DEFAULT_DOWNLOAD_CHUNK_SIZE):
+                        file.write(chunk)
+
+            except IOError as e:
+                raise IOError(f"Error saving file: {e}")
+
+            if os.path.exists(content_dir):
+                shutil.rmtree(content_dir)
+
+            with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+                zip_ref.extractall(content_dir)
+
+            os.remove(archive_path)
 
     # --- Auth API --- #
     def register(self, login: str, password: str) -> None:
