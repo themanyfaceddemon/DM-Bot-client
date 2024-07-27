@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
+__pypackages__/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# VS and VSC
+.vs/*
+.vscode/*
+
+# Data
+[Dd]ata/*
+Content/*
+
+# Texture
+Sprites/
+
+# PyQT6
+*_ui.py
