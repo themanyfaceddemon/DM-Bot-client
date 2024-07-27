@@ -52,27 +52,33 @@ class ClientUnit:
             self._http_url = temp_http_url
             self._socket_url = (ip, server_info.get("socket_port"))
 
-    def download_server_content(self) -> None:
-            response = self._session.get(f"{self._http_url}/server/download_server_content", stream=True)
+    def download_server_content(self, progress_callback=None) -> None:
+        response = self._session.get(f"{self._http_url}/server/download_server_content", stream=True)
 
-            archive_path = "content.zip"
-            content_dir = os.path.join(ROOT_PATH, 'Content')
+        archive_path = "content.zip"
+        content_dir = os.path.join(ROOT_PATH, 'Content')
 
-            try:
-                with open(archive_path, 'wb') as file:
-                    for chunk in response.iter_content(chunk_size=self.DEFAULT_DOWNLOAD_CHUNK_SIZE):
-                        file.write(chunk)
+        total_size = int(response.headers.get('content-length', 0))
+        downloaded_size = 0
 
-            except IOError as e:
-                raise IOError(f"Error saving file: {e}")
+        try:
+            with open(archive_path, 'wb') as file:
+                for chunk in response.iter_content(chunk_size=self.DEFAULT_DOWNLOAD_CHUNK_SIZE):
+                    file.write(chunk)
+                    downloaded_size += len(chunk)
+                    if progress_callback:
+                        progress_callback(downloaded_size, total_size)
 
-            if os.path.exists(content_dir):
-                shutil.rmtree(content_dir)
+        except IOError as e:
+            raise IOError(f"Error saving file: {e}")
 
-            with zipfile.ZipFile(archive_path, 'r') as zip_ref:
-                zip_ref.extractall(content_dir)
+        if os.path.exists(content_dir):
+            shutil.rmtree(content_dir)
 
-            os.remove(archive_path)
+        with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+            zip_ref.extractall(content_dir)
+
+        os.remove(archive_path)
 
     # --- Auth API --- #
     def register(self, login: str, password: str) -> None:
