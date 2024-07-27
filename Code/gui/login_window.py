@@ -1,11 +1,13 @@
-import sys
 import os
-from PyQt6.QtWidgets import QApplication, QMainWindow, QMessageBox, QLineEdit, QPushButton, QLabel
+
 from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import (QLabel, QLineEdit, QMainWindow, QMessageBox,
+                             QPushButton)
 from PyQt6.uic import loadUi
 from root_path import ROOT_PATH
 from systems.decorators import global_class
 from systems.network import ClientUnit
+
 
 @global_class
 class LoginWindow(QMainWindow):

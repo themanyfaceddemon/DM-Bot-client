@@ -1,8 +1,8 @@
 import sys
 
-from systems.network import ClientUnit
 from gui import LoginWindow
 from PyQt6.QtWidgets import QApplication
+from systems.network import ClientUnit
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
