@@ -107,11 +107,14 @@ def user_input_ip(client_unit: ClientUnit) -> bool:
     """
     try:
         user_ip: str = input("Введите IP сервера (ТОЛЬКО IP!): ")
-        
         if not user_ip:
             user_ip = "127.0.0.1"
         
-        if client_unit.check_server(user_ip):
+        user_port: str = input("Введите порт сервера: ")
+        if not user_port:
+            user_port = 5000
+        
+        if client_unit.check_server(user_ip, user_port):
             print("IP-адрес успешно проверен.")
             return True
         
