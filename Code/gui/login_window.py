@@ -18,7 +18,6 @@ class LoginWindow(QMainWindow):
         # Привязка виджетов
         self.ip_line = self.findChild(QLineEdit, 'IPLine')
         self.port_line = self.findChild(QLineEdit, 'PortLine')
-        self.soket_port_line = self.findChild(QLineEdit, 'SoketPortLine')
         self.server_check_button = self.findChild(QPushButton, 'ServerCheckButton')
         self.server_check_label = self.findChild(QLabel, 'ServerCheckLabel')
 
@@ -33,26 +32,20 @@ class LoginWindow(QMainWindow):
     def check_server(self):
         ip = self.ip_line.text()
         port = self.port_line.text()
-        soket_port = self.soket_port_line.text()
 
-        if ip and port and soket_port:
+        if ip and port:
             try:
                 port = int(port)
-                soket_port = int(soket_port)
             
             except ValueError:
-                QMessageBox.warning(self, "Ошибка", "Порт и порт сокета должны быть числами!")
+                QMessageBox.warning(self, "Ошибка", "Порт должн быть числом!")
                 self.set_server_check_label("failure")
                 return
 
             cl_unit: ClientUnit = ClientUnit.get_instance()
             try:
-                if not cl_unit.check_server(ip, port, soket_port):
-                    QMessageBox.warning(self, "Ошибка", "Невозможно подключиться к серверу")
-                    self.set_server_check_label("failure")
-                
-                else:
-                    self.set_server_check_label("success")
+                cl_unit.check_server(ip, port)
+                self.set_server_check_label("success")
             
             except Exception as e:
                 QMessageBox.warning(self, "Ошибка", f"Невозможно подключиться к серверу: {str(e)}")

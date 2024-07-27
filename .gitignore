@@ -24,3 +24,6 @@ venv.bak/
 
 # Texture
 Sprites/
+
+# PyQT6
+*_ui.py
