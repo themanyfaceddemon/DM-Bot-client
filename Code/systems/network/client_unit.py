@@ -24,7 +24,10 @@ class ClientUnit:
         self._http_url: str = ""
         self._socket_url: Tuple[str, int] = ("", 0)
         self._session: requests.Session = requests.Session()
+        
         self._token: Optional[str] = None
+        self._cur_server_name: Optional[str] = None
+        
         self._socket: Optional[socket.socket] = None
         self._bg_processing: bool = False
         self._bg_thread: Optional[threading.Thread] = None
@@ -46,11 +49,12 @@ class ClientUnit:
         response = self._session.get(f"{temp_http_url}/server/check_status", timeout=5)
         response.raise_for_status()
 
-        response_data = response.json()
+        response_data: dict = response.json()
         if response_data.get("message") == "Server is online":
-            server_info = response_data.get("server_info", {})
+            server_info: dict = response_data.get("server_info", {})
             self._http_url = temp_http_url
             self._socket_url = (ip, server_info.get("socket_port"))
+            self._cur_server_name = server_info.get("server_name")
 
     def download_server_content(self, progress_callback=None) -> None:
         try:
@@ -61,7 +65,7 @@ class ClientUnit:
             raise RuntimeError(f"Error during HTTP request: {e}")
 
         archive_path = "content.zip"
-        content_dir = os.path.join(ROOT_PATH, 'Content', "Servers", self._http_url)
+        content_dir = os.path.join(ROOT_PATH, 'Content', "Servers", self._cur_server_name)
         total_size = int(response.headers.get('content-length', 0))
         downloaded_size = 0
 
