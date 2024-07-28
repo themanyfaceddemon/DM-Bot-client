@@ -7,7 +7,7 @@ import unittest
 import yaml
 from PIL import Image
 
-from Code.systems.texture_system import TextureSystem
+from Code.texture_system import TextureSystem
 
 
 class TestTextureSystem(unittest.TestCase):
