@@ -19,12 +19,13 @@ venv.bak/
 .vs/*
 .vscode/*
 
-# Data
-[Dd]ata/*
+# Server data
 Content/Servers/*
 
 # Texture
-Sprites/
+Content/Compiled/*
+*_compiled*.gif
+*_compiled*.png
 
 # PyQT6
 *_ui.py

@@ -5,6 +5,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import yaml
 from PIL import Image, ImageSequence
+from root_path import ROOT_PATH
+from systems.texture_system.color import Color
 
 
 class TextureSystem:
@@ -12,7 +14,7 @@ class TextureSystem:
     """
     __slots__ = []
     DEFAULT_FPS: int = 24
-    DEFAULT_COLOR: Tuple[int, int, int, int] = (255, 255, 255, 255)
+    DEFAULT_COLOR: Color = Color(255, 255, 255, 255)
 
     @staticmethod
     def _get_hash_list(layers: List[Dict[str, Any]]) -> str:
@@ -55,32 +57,6 @@ class TextureSystem:
         return frames
 
     @staticmethod
-    def _get_color_str(color: Tuple[int, int, int, int]) -> str:
-        """Возвращает строковое представление цвета.
-
-        Args:
-            color (Tuple[int, int, int, int]): Цвет в формате RGBA.
-
-        Returns:
-            str: Строковое представление цвета.
-        """
-        TextureSystem._validate_color(color)
-        return '_'.join(map(str, color))
-    
-    @staticmethod
-    def _validate_color(color: Tuple[int, int, int, int]) -> None:
-        """Проверяет, что цвет в формате RGBA имеет корректные значения.
-
-        Args:
-            color (Tuple[int, int, int, int]): Цвет в формате RGBA.
-
-        Raises:
-            ValueError: Если значения цвета находятся вне диапазона 0-255.
-        """
-        if not all(0 <= c <= 255 for c in color):
-            raise ValueError("Invalid RGBA color format for texture. All values must be between 0 и 255")
-
-    @staticmethod
     def get_textures(path: str) -> List[Dict[str, Any]]:
         """Загружает текстуры из указанного пути.
 
@@ -93,7 +69,7 @@ class TextureSystem:
         with open(f"{path}/info.yml", 'r') as file:
             info = yaml.safe_load(file)
         
-        return info.get('Sprites', [])
+        return info.get('Texture', [])
 
     @staticmethod
     def get_state_info(path: str, state: str) -> Tuple[int, int, int, bool]:
@@ -112,7 +88,7 @@ class TextureSystem:
         with open(f"{path}/info.yml", 'r') as file:
             info = yaml.safe_load(file)
         
-        info = info.get('Sprites', [])
+        info = info.get('Texture', [])
 
         sprite_info = next((sprite for sprite in info if sprite['name'] == state), None)
         if not sprite_info:
@@ -126,13 +102,13 @@ class TextureSystem:
         return frame_width, frame_height, num_frames, is_mask
     
     @staticmethod
-    def _get_compiled(path: str, state: str, color: Optional[Tuple[int, int, int, int]] = None, is_gif: bool = False) -> Union[Image.Image, List[Image.Image], None]:
+    def _get_compiled(path: str, state: str, color: Optional[Color] = None, is_gif: bool = False) -> Union[Image.Image, List[Image.Image], None]:
         """Проверяет наличие компилированного изображения или GIF.
 
         Args:
             path (str): Путь к файлу.
             state (str): Имя состояния.
-            color (Optional[Tuple[int, int, int, int]], optional): Цвет в формате RGBA. По умолчанию None.
+            color (Optional[Color], optional): Цвет в формате RGBA. По умолчанию None.
             is_gif (bool, optional): Указывает, является ли изображение GIF. По умолчанию False.
 
         Returns:
@@ -140,7 +116,7 @@ class TextureSystem:
         """
         image_path: str = f"{path}/{state}"
         if color:
-            image_path += f"_compiled_{TextureSystem._get_color_str(color)}"
+            image_path += f"_compiled_{color}"
         
         image_path += ".gif" if is_gif else ".png"
 
@@ -155,13 +131,13 @@ class TextureSystem:
             return None
     
     @staticmethod
-    def get_image_recolor(path: str, state: str, color: Tuple[int, int, int, int] = DEFAULT_COLOR) -> Image.Image:
+    def get_image_recolor(path: str, state: str, color: Color = DEFAULT_COLOR) -> Image.Image:
         """Возвращает перекрашенное изображение указанного состояния.
 
         Args:
             path (str): Путь к файлу.
             state (str): Имя состояния.
-            color (Tuple[int, int, int, int], optional): Цвет в формате RGBA. По умолчанию DEFAULT_COLOR.
+            color (Color, optional): Цвет в формате RGBA. По умолчанию DEFAULT_COLOR.
 
         Returns:
             Image.Image: Перекрашенное изображение.
@@ -174,16 +150,16 @@ class TextureSystem:
             image = image.convert("RGBA")
             new_colored_image = [
                 (
-                    int(pixel[0] * color[0] / 255),
-                    int(pixel[0] * color[1] / 255),
-                    int(pixel[0] * color[2] / 255),
+                    int(pixel[0] * color.r / 255),
+                    int(pixel[0] * color.g / 255),
+                    int(pixel[0] * color.b / 255),
                     pixel[3]
                 ) if pixel[3] != 0 else pixel
                 for pixel in image.getdata()
             ]
 
             image.putdata(new_colored_image)
-            image.save(f"{path}/{state}_compiled_{TextureSystem._get_color_str(color)}.png")
+            image.save(f"{path}/{state}_compiled_{color}.png")
             return image
     
     @staticmethod
@@ -207,13 +183,13 @@ class TextureSystem:
         raise FileNotFoundError(f"Image file for state '{state}' not found in path '{path}'.")
 
     @staticmethod
-    def get_gif_recolor(path: str, state: str, color: Tuple[int, int, int, int] = DEFAULT_COLOR, fps: int = DEFAULT_FPS) -> List[Image.Image]:
+    def get_gif_recolor(path: str, state: str, color: Color = DEFAULT_COLOR, fps: int = DEFAULT_FPS) -> List[Image.Image]:
         """Возвращает перекрашенный GIF указанного состояния.
 
         Args:
             path (str): Путь к файлу.
             state (str): Имя состояния.
-            color (Tuple[int, int, int, int], optional): Цвет в формате RGBA. По умолчанию DEFAULT_COLOR.
+            color (Color, optional): Цвет в формате RGBA. По умолчанию DEFAULT_COLOR.
             fps (int, optional): Частота кадров. По умолчанию DEFAULT_FPS.
 
         Returns:
@@ -229,7 +205,7 @@ class TextureSystem:
         
         frames = TextureSystem._slice_image(image, frame_width, frame_height, num_frames)
         
-        output_path = f"{path}/{state}_compiled_{TextureSystem._get_color_str(color)}.gif"
+        output_path = f"{path}/{state}_compiled_{color}.gif"
         frames[0].save(output_path, save_all=True, append_images=frames[1:], duration=1000//fps, loop=0)
         
         return frames
@@ -289,7 +265,7 @@ class TextureSystem:
         Returns:
             Union[Image.Image, List[Image.Image]]: Объединенное изображение или список кадров GIF.
         """
-        base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'Sprites', 'compiled'))
+        base_path = os.path.join(ROOT_PATH, 'Content', 'Compiled')
         if not os.path.exists(base_path):
             os.makedirs(base_path)
         
@@ -335,7 +311,7 @@ class TextureSystem:
                 final_images[i] = final_image_expanded
         else:
             if is_mask:
-                final_image = TextureSystem.get_image_recolor(first_layer['path'], first_layer['state'], first_layer['color'])
+                final_image = TextureSystem.get_image_recolor(first_layer['path'], first_layer['state'], Color.from_tuple(first_layer['color']))
             else:
                 final_image = TextureSystem.get_image(first_layer['path'], first_layer['state'])
             
@@ -349,7 +325,7 @@ class TextureSystem:
 
             if is_gif:
                 if is_mask:
-                    recolored_frames = TextureSystem.get_gif_recolor(layer['path'], layer['state'], layer['color'], fps)
+                    recolored_frames = TextureSystem.get_gif_recolor(layer['path'], layer['state'], Color.from_tuple(layer['color']), fps)
                     for i in range(max_frames):
                         recolored_frame_expanded = Image.new("RGBA", (max_width, max_height))
                         frame_to_use = recolored_frames[min(i, len(recolored_frames) - 1)]  # Используем последний кадр, если i превышает количество кадров
@@ -370,7 +346,7 @@ class TextureSystem:
                             final_images.append(normal_frame_expanded)
             else:
                 if is_mask:
-                    recolored_image = TextureSystem.get_image_recolor(layer['path'], layer['state'], layer['color'])
+                    recolored_image = TextureSystem.get_image_recolor(layer['path'], layer['state'], Color.from_tuple(layer['color']))
                     recolored_image_expanded = Image.new("RGBA", (max_width, max_height))
                     recolored_image_expanded.paste(recolored_image, (0, 0))
                     for i in range(len(final_images)):

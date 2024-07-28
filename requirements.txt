@@ -1,5 +1,6 @@
 msgpack
 Pillow
+pydub
 PyQt6
 PyYAML
 requests
