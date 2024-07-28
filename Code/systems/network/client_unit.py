@@ -53,11 +53,15 @@ class ClientUnit:
             self._socket_url = (ip, server_info.get("socket_port"))
 
     def download_server_content(self, progress_callback=None) -> None:
-        response = self._session.get(f"{self._http_url}/server/download_server_content", stream=True)
+        try:
+            response = self._session.get(f"{self._http_url}/server/download_server_content", stream=True)
+            response.raise_for_status()
+        
+        except requests.RequestException as e:
+            raise RuntimeError(f"Error during HTTP request: {e}")
 
         archive_path = "content.zip"
-        content_dir = os.path.join(ROOT_PATH, 'Content')
-
+        content_dir = os.path.join(ROOT_PATH, 'Content', "Servers", self._http_url)
         total_size = int(response.headers.get('content-length', 0))
         downloaded_size = 0
 
@@ -68,17 +72,24 @@ class ClientUnit:
                     downloaded_size += len(chunk)
                     if progress_callback:
                         progress_callback(downloaded_size, total_size)
-
+        
         except IOError as e:
             raise IOError(f"Error saving file: {e}")
 
         if os.path.exists(content_dir):
             shutil.rmtree(content_dir)
 
-        with zipfile.ZipFile(archive_path, 'r') as zip_ref:
-            zip_ref.extractall(content_dir)
+        os.makedirs(content_dir, exist_ok=True)
 
-        os.remove(archive_path)
+        try:
+            with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+                zip_ref.extractall(content_dir)
+        
+        except zipfile.BadZipFile as e:
+            raise RuntimeError(f"Error extracting zip file: {e}")
+        
+        finally:
+            os.remove(archive_path)
 
     # --- Auth API --- #
     def register(self, login: str, password: str) -> None:
