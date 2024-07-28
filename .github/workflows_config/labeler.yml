@@ -1,0 +1,15 @@
+"Changes: Unit test":
+- changed-files:
+  - any-glob-to-any-file: ['Tests/**']
+
+"Changes: Workflows":
+- changed-files:
+  - any-glob-to-any-file: ['.github/workflows/**']
+
+"Changes: Workflows config":
+- changed-files:
+  - any-glob-to-any-file: ['.github/workflows_config/**']
+
+"Changes: GitHub template":
+- changed-files:
+  - any-glob-to-any-file: ['.github/ISSUE_TEMPLATE/**', '.github/PULL_REQUEST_TEMPLATE.md']

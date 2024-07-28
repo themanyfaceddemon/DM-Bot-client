@@ -1,0 +1,23 @@
+name: Close PRs on master
+
+on:
+  pull_request_target:
+    types: [opened, ready_for_review]
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    if: ${{ github.head_ref == 'master' || github.head_ref == 'main' }}
+
+    steps:
+    - uses: superbrothers/close-pull-request@v3
+      with:
+        comment: |
+          Похоже, вы новичок в нашем репозитории и пытаетесь внести изменения из ветки master.
+
+          Пожалуйста, прочитайте следующие гайды для правильной работы с репозиторием:
+          - [Подготовка окружения](http://dmbotwiki.a0001.net/ru/guide/prepare-environment.html)
+          - [Как создать форк](http://dmbotwiki.a0001.net/ru/guide/how-to-create-a-fork.html)
+          - [Первые изменения](http://dmbotwiki.a0001.net/ru/guide/first-changes.html)
+
+          Данный pull request будет закрыт, так как вы пытаетесь внести изменения из ветки master вашей локальной копии репозитория в ветку master основного репозитория. В будущем, пожалуйста, создавайте отдельные ветки для ваших изменений.
