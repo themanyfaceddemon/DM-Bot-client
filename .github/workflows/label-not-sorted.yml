@@ -1,0 +1,38 @@
+name: "Label new issues with 'Not sorted'"
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  add-label:
+    runs-on: ubuntu-latest
+
+    permissions:
+      issues: write
+
+    steps:
+    - name: Label new issues with "Not sorted"
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { owner, repo } = context.repo;
+          const issue_number = context.issue.number;
+
+          // Get issue details
+          const { data: issue } = await github.rest.issues.get({
+            owner,
+            repo,
+            issue_number
+          });
+
+          // Check if author is "themanyfaceddemon"
+          if (issue.user.login !== "themanyfaceddemon" || issue.labels.length === 0) {
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number,
+              labels: ["Issue: Not sorted"]
+            });
+          }
