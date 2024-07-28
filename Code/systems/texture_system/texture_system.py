@@ -3,6 +3,7 @@ import os
 import pickle
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+import numpy as np
 import yaml
 from PIL import Image, ImageSequence
 
@@ -42,16 +43,19 @@ class TextureSystem:
             List[Image.Image]: Список кадров.
         """
         frames = []
-        image_width, _ = image.size
+        image_width, image_height = image.size
 
         for i in range(num_frames):
-            row = (i * frame_width) // image_width
             col = (i * frame_width) % image_width
-            box = (col, row * frame_height, col + frame_width, row * frame_height + frame_height)
-            frame = image.crop(box)
-            frame = frame.convert("RGBA")
+            row = (i * frame_width) // image_width * frame_height
+            box = (col, row, col + frame_width, row + frame_height)
+            
+            if box[3] > image_height:
+                break
+            
+            frame = image.crop(box).convert("RGBA")
             frames.append(frame)
-        
+
         return frames
 
     @staticmethod
@@ -169,22 +173,25 @@ class TextureSystem:
         image = TextureSystem._get_compiled(path, state, color, False)
         if image:
             return image
-        
-        with Image.open(f"{path}/{state}.png") as image:
-            image = image.convert("RGBA")
-            new_colored_image = [
-                (
-                    int(pixel[0] * color[0] / 255),
-                    int(pixel[0] * color[1] / 255),
-                    int(pixel[0] * color[2] / 255),
-                    pixel[3]
-                ) if pixel[3] != 0 else pixel
-                for pixel in image.getdata()
-            ]
 
-            image.putdata(new_colored_image)
-            image.save(f"{path}/{state}_compiled_{TextureSystem._get_color_str(color)}.png")
-            return image
+        with Image.open(f"{path}/{state}.png") as img:
+            img = img.convert("RGBA")
+            img_data = np.array(img)
+
+            # Создание маски для непрозрачных пикселей
+            mask = img_data[:, :, 3] != 0
+
+            # Применение цвета к пикселям
+            img_data[mask] = (
+                img_data[mask, 0] * color[0] // 255,
+                img_data[mask, 0] * color[1] // 255,
+                img_data[mask, 0] * color[2] // 255,
+                img_data[mask, 3]
+            )
+
+            new_img = Image.fromarray(img_data, 'RGBA')
+            new_img.save(f"{path}/{state}_compiled_{TextureSystem._get_color_str(color)}.png")
+            return new_img
     
     @staticmethod
     def get_image(path: str, state: str) -> Image.Image:
