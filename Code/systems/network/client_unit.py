@@ -16,7 +16,7 @@ from systems.events_system import EventManager
 
 @global_class
 class ClientUnit:
-    __slots__ = ['_http_url', '_socket_url', '_session', '_token', '_socket', '_bg_processing', '_bg_thread']
+    __slots__ = ['_http_url', '_socket_url', '_session', '_token', '_cur_server_name', '_socket', '_bg_processing', '_bg_thread']
     SOCKET_CHUNK_SIZE: int = 8192
     DEFAULT_DOWNLOAD_CHUNK_SIZE: int = 8192
 
