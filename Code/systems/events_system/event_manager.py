@@ -2,15 +2,16 @@ import asyncio
 from inspect import signature
 from typing import Any, Callable, Dict, List
 
-from systems.decorators import global_class
+from systems.misc import GlobalClass
 
 
-@global_class
-class EventManager:
-    __slots__ = ['_register_defs']
+class EventManager(GlobalClass):
+    __slots__ = ['_register_defs', '_initialized']
     
     def __init__(self) -> None:
-        self._register_defs: Dict[str, List[Callable[..., Any]]] = {}
+        if not hasattr(self, '_initialized'):
+            self._initialized = True
+            self._register_defs: Dict[str, List[Callable[..., Any]]] = {}
         
     def register_event(self, event_name: str, func: Callable[..., Any]):
         if event_name not in self._register_defs:

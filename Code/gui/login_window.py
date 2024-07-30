@@ -7,35 +7,38 @@ from PyQt6.QtWidgets import (QDialog, QLabel, QLineEdit, QMainWindow,
                              QMessageBox, QProgressBar, QPushButton)
 from PyQt6.uic import loadUi
 from root_path import ROOT_PATH
-from systems.decorators import global_class
+from systems.misc import GlobalClass
 from systems.network import ClientUnit
 
 
-@global_class
-class LoginWindow(QMainWindow):
+class LoginWindow(QMainWindow, GlobalClass):
     def __init__(self):
         super().__init__()
-        loadUi(os.path.join(ROOT_PATH, 'GUI', 'windows', 'LoginWindow.ui'), self)
-
-        # Привязка виджетов
-        self.ip_line = self.findChild(QLineEdit, 'IPLine')
-        self.port_line = self.findChild(QLineEdit, 'PortLine')
-        self.server_check_button = self.findChild(QPushButton, 'ServerCheckButton')
-        self.server_check_label = self.findChild(QLabel, 'ServerCheckLabel')
-
-        self.login_button = self.findChild(QPushButton, 'LoginButton')
-        self.register_button = self.findChild(QPushButton, 'RegisterButton')
-
-        self.set_server_check_label("failure")
         
-        # Привязка функций к кнопкам
-        self.server_check_button.clicked.connect(self.check_server)
-        self.login_button.clicked.connect(self.open_auth_window)
-        self.register_button.clicked.connect(self.open_registration_window)
+        if not hasattr(self, '_initialized'):
+            self._initialized = True
+            
+            loadUi(os.path.join(ROOT_PATH, 'GUI', 'windows', 'LoginWindow.ui'), self)
 
-        # Начальное состояние кнопок
-        self.login_button.setEnabled(False)
-        self.register_button.setEnabled(False)
+            # Привязка виджетов
+            self.ip_line = self.findChild(QLineEdit, 'IPLine')
+            self.port_line = self.findChild(QLineEdit, 'PortLine')
+            self.server_check_button = self.findChild(QPushButton, 'ServerCheckButton')
+            self.server_check_label = self.findChild(QLabel, 'ServerCheckLabel')
+
+            self.login_button = self.findChild(QPushButton, 'LoginButton')
+            self.register_button = self.findChild(QPushButton, 'RegisterButton')
+
+            self.set_server_check_label("failure")
+            
+            # Привязка функций к кнопкам
+            self.server_check_button.clicked.connect(self.check_server)
+            self.login_button.clicked.connect(self.open_auth_window)
+            self.register_button.clicked.connect(self.open_registration_window)
+
+            # Начальное состояние кнопок
+            self.login_button.setEnabled(False)
+            self.register_button.setEnabled(False)
 
     def set_server_check_label(self, state: str):
         self.server_check_label.setPixmap(QPixmap(os.path.join(ROOT_PATH, 'GUI', 'images', 'status', f'{state}_64_64.png')))
@@ -62,7 +65,7 @@ class LoginWindow(QMainWindow):
             self.set_buttons(False)
             return
 
-        cl_unit: ClientUnit = ClientUnit.get_instance()
+        cl_unit = ClientUnit()
         try:
             cl_unit.check_server(ip, int(port))
             self.set_server_check_label("success")
@@ -113,7 +116,7 @@ class LoginWindow(QMainWindow):
     
     def run_main_app(self) -> None:
         self.close()
-        self.main_window: MainApplicationWindow = MainApplicationWindow.get_instance()
+        self.main_window = MainApplicationWindow()
         self.main_window.show()
 
 class AuthDialog(QDialog):
@@ -135,7 +138,7 @@ class AuthDialog(QDialog):
             QMessageBox.warning(self, "Ошибка", "Все поля должны быть заполнены!")
             return
         
-        cl_unit: ClientUnit = ClientUnit.get_instance()
+        cl_unit = ClientUnit()
         try:
             cl_unit.login(username, password)
             self.close_current_and_open_main_window()
@@ -172,7 +175,7 @@ class RegistrationDialog(QDialog):
             QMessageBox.warning(self, "Ошибка", "Пароли должны совпадать!")
             return
             
-        cl_unit: ClientUnit = ClientUnit.get_instance()
+        cl_unit = ClientUnit()
         try:
             cl_unit.register(username, password)
             self.close_current_and_open_main_window()
@@ -190,7 +193,7 @@ class DownloadThread(QThread):
         super().__init__()
 
     def run(self):
-        cl_unit: ClientUnit = ClientUnit.get_instance()
+        cl_unit = ClientUnit()
         cl_unit.download_server_content(self.report_progress)
 
     def report_progress(self, downloaded_size, total_size):

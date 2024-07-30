@@ -10,29 +10,30 @@ from typing import Any, Dict, Optional, Tuple
 import msgpack
 import requests
 from root_path import ROOT_PATH
-from systems.decorators import global_class
 from systems.events_system import EventManager
+from systems.misc import GlobalClass
 
 
-@global_class
-class ClientUnit:
-    __slots__ = ['_http_url', '_socket_url', '_session', '_token', '_cur_server_name', '_socket', '_bg_processing', '_bg_thread']
+class ClientUnit(GlobalClass):
+    __slots__ = ['_initialized', '_http_url', '_socket_url', '_session', '_token', '_cur_server_name', '_socket', '_bg_processing', '_bg_thread']
     SOCKET_CHUNK_SIZE: int = 8192
     DEFAULT_DOWNLOAD_CHUNK_SIZE: int = 8192
 
     def __init__(self) -> None:
-        self._http_url: str = ""
-        self._socket_url: Tuple[str, int] = ("", 0)
-        self._session: requests.Session = requests.Session()
-        
-        self._token: Optional[str] = None
-        self._cur_server_name: Optional[str] = None
-        
-        self._socket: Optional[socket.socket] = None
-        self._bg_processing: bool = False
-        self._bg_thread: Optional[threading.Thread] = None
+        if not hasattr(self, '_initialized'):
+            self._initialized = True
+            self._http_url: str = ""
+            self._socket_url: Tuple[str, int] = ("", 0)
+            self._session: requests.Session = requests.Session()
+            
+            self._token: Optional[str] = None
+            self._cur_server_name: Optional[str] = None
+            
+            self._socket: Optional[socket.socket] = None
+            self._bg_processing: bool = False
+            self._bg_thread: Optional[threading.Thread] = None
 
-        atexit.register(self._shutdown)
+            atexit.register(self._shutdown)
 
     # --- Net data --- #
     @staticmethod
@@ -171,7 +172,7 @@ class ClientUnit:
                 self._bg_thread = None
 
     async def _bg_receive(self) -> None:
-        ev_manager: EventManager = EventManager.get_instance()
+        ev_manager = EventManager()
         while self._bg_processing:
             data: dict = await asyncio.get_event_loop().run_in_executor(None, self.recv_data)
             await ev_manager.call_event(event_name=data.get('ev_type', None), **data)
