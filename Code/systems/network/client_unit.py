@@ -2,20 +2,18 @@ import asyncio
 import atexit
 import os
 import shutil
-import socket
-import threading
 import zipfile
 from typing import Any, Dict, Optional, Tuple
 
 import msgpack
 import requests
+import websockets
 from root_path import ROOT_PATH
 from systems.events_system import EventManager
 from systems.misc import GlobalClass
 
-
 class ClientUnit(GlobalClass):
-    __slots__ = ['_initialized', '_http_url', '_socket_url', '_session', '_token', '_cur_server_name', '_socket', '_bg_processing', '_bg_thread']
+    __slots__ = ['_initialized', '_http_url', '_socket_url', '_session', '_token', '_cur_server_name', '_websocket', '_bg_processing', '_bg_task']
     SOCKET_CHUNK_SIZE: int = 8192
     DEFAULT_DOWNLOAD_CHUNK_SIZE: int = 8192
 
@@ -23,15 +21,15 @@ class ClientUnit(GlobalClass):
         if not hasattr(self, '_initialized'):
             self._initialized = True
             self._http_url: str = ""
-            self._socket_url: Tuple[str, int] = ("", 0)
+            self._socket_url: str = ""
             self._session: requests.Session = requests.Session()
             
             self._token: Optional[str] = None
             self._cur_server_name: Optional[str] = None
             
-            self._socket: Optional[socket.socket] = None
+            self._websocket: Optional[websockets.WebSocketClientProtocol] = None
             self._bg_processing: bool = False
-            self._bg_thread: Optional[threading.Thread] = None
+            self._bg_task: Optional[asyncio.Task] = None
 
             atexit.register(self._shutdown)
 
@@ -42,7 +40,7 @@ class ClientUnit(GlobalClass):
 
     @staticmethod
     def unpack_data(data: bytes) -> Any:
-        return msgpack.unpackb(data, raw=False)
+        return msgpack.unpackb(data)
 
     # --- Server API --- #
     def check_server(self, ip: str, port: int = 5000) -> None:
@@ -54,7 +52,7 @@ class ClientUnit(GlobalClass):
         if response_data.get("message") == "Server is online":
             server_info: dict = response_data.get("server_info", {})
             self._http_url = temp_http_url
-            self._socket_url = (ip, server_info.get("socket_port"))
+            self._socket_url = f"ws://{ip}:{server_info.get('socket_port')}"
             self._cur_server_name = server_info.get("server_name")
 
     def download_server_content(self, progress_callback=None) -> None:
@@ -117,71 +115,68 @@ class ClientUnit(GlobalClass):
         response.raise_for_status()
         return response.json()
 
-    # --- Socket work --- #
-    def connect(self) -> None:
+    # --- WebSocket work --- #
+    async def connect(self) -> None:
         if not self._token:
             raise ConnectionError("Token is not available. Please log in first.")
-
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.connect(self._socket_url)
-        self._socket.sendall(self._token.encode('utf-8'))
-
+        
+        self._websocket = await websockets.connect(self._socket_url)
+        await self._websocket.send(self._token)
+        
         # Wait for token confirmation
-        response = self._socket.recv(self.SOCKET_CHUNK_SIZE)
-        if response != b"Token accepted":
+        response = await self._websocket.recv()
+        if response != "Token accepted":
             raise ConnectionError("Token was not accepted by the server")
 
-    def disconnect(self) -> None:
-        self.stop_bg_processing()
-        if self._socket:
-            self._socket.close()
-            self._socket = None
+    async def disconnect(self) -> None:
+        await self.stop_bg_processing()
+        if self._websocket:
+            await self._websocket.close()
+            self._websocket = None
 
-    def send_data(self, data: Dict[str, Any]) -> None:
-        if not self._socket:
-            raise ConnectionError("Socket connection is not established")
+    async def send_data(self, data: Dict[str, Any]) -> None:
+        if not self._websocket:
+            raise ConnectionError("WebSocket connection is not established")
         packed_data = self.pack_data(data)
-        self._socket.sendall(packed_data)
+        await self._websocket.send(packed_data)
 
-    def recv_data(self) -> Dict[str, Any]:
-        if not self._socket:
-            raise ConnectionError("Socket connection is not established")
-        response = self._socket.recv(self.SOCKET_CHUNK_SIZE)
+    async def recv_data(self) -> Dict[str, Any]:
+        if not self._websocket:
+            raise ConnectionError("WebSocket connection is not established")
+        response = await self._websocket.recv()
         return self.unpack_data(response)
 
     # --- Background Processing --- #
-    def start_bg_processing(self) -> None:
-        if not self._socket:
-            raise ConnectionError("Socket connection is not established")
+    async def start_bg_processing(self) -> None:
+        if not self._websocket:
+            raise ConnectionError("WebSocket connection is not established")
         if self._bg_processing:
             raise ValueError("Background processing is already running")
 
         self._bg_processing = True
-        loop = asyncio.new_event_loop()
-        self._bg_thread = threading.Thread(target=self._start_event_loop, args=(loop,), daemon=True)
-        self._bg_thread.start()
-        asyncio.run_coroutine_threadsafe(self._bg_receive(), loop)
+        self._bg_task = asyncio.create_task(self._bg_receive())
 
-    def stop_bg_processing(self) -> None:
+    async def stop_bg_processing(self) -> None:
         if self._bg_processing:
             self._bg_processing = False
-            if self._bg_thread:
-                loop = asyncio.get_event_loop()
-                loop.call_soon_threadsafe(loop.stop)
-                self._bg_thread.join()
-                self._bg_thread = None
+            if self._bg_task:
+                self._bg_task.cancel()
+                await self._bg_task
+                self._bg_task = None
 
     async def _bg_receive(self) -> None:
         ev_manager = EventManager()
         while self._bg_processing:
-            data: dict = await asyncio.get_event_loop().run_in_executor(None, self.recv_data)
-            await ev_manager.call_event(event_name=data.get('ev_type', None), **data)
-
-    def _start_event_loop(self, loop: asyncio.AbstractEventLoop) -> None:
-        asyncio.set_event_loop(loop)
-        loop.run_forever()
+            try:
+                data: dict = await self.recv_data()
+                await ev_manager.call_open_event(event_name=data.get('ev_type', None), **data)
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                # Log or handle the exception
+                pass
 
     # --- Cleanup --- #
-    def _shutdown(self) -> None:
+    async def _shutdown(self) -> None:
         self.logout()
-        self.disconnect()
+        await self.disconnect()
