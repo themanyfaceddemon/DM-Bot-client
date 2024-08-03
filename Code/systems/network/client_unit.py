@@ -3,7 +3,7 @@ import atexit
 import os
 import shutil
 import zipfile
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 
 import msgpack
 import requests
@@ -11,6 +11,7 @@ import websockets
 from root_path import ROOT_PATH
 from systems.events_system import EventManager
 from systems.misc import GlobalClass
+
 
 class ClientUnit(GlobalClass):
     __slots__ = ['_initialized', '_http_url', '_socket_url', '_session', '_token', '_cur_server_name', '_websocket', '_bg_processing', '_bg_task']
@@ -177,6 +178,6 @@ class ClientUnit(GlobalClass):
                 pass
 
     # --- Cleanup --- #
-    async def _shutdown(self) -> None:
+    def _shutdown(self) -> None:
         self.logout()
-        await self.disconnect()
+        asyncio.run(self.disconnect())
