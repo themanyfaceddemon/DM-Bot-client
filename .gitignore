@@ -15,10 +15,6 @@ ENV/
 env.bak/
 venv.bak/
 
-# VS and VSC
-.vs/*
-.vscode/*
-
 # Server data
 Content/Servers/*
 
@@ -26,6 +22,3 @@ Content/Servers/*
 Content/Compiled/*
 *_compiled*.gif
 *_compiled*.png
-
-# PyQT6
-*_ui.py

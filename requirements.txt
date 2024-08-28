@@ -1,7 +1,7 @@
+dearpygui
+dearpygui-async
+DMBotNetwork
+DMBotTools
 msgpack
 Pillow
-pydub
-PyQt6
 PyYAML
-requests
-websockets

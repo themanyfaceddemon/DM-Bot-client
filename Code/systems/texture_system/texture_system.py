@@ -4,9 +4,8 @@ import pickle
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import yaml
+from DMBotTools import Color
 from PIL import Image, ImageSequence
-from root_path import ROOT_PATH
-from systems.texture_system.color import Color
 
 
 class TextureSystem:
@@ -255,7 +254,7 @@ class TextureSystem:
         return merged_image
 
     @staticmethod
-    def merge_layers(layers: List[Dict[str, Any]], fps: int = DEFAULT_FPS) -> Union[Image.Image, List[Image.Image]]:
+    def merge_layers(root_path, layers: List[Dict[str, Any]], fps: int = DEFAULT_FPS) -> Union[Image.Image, List[Image.Image]]:
         """Объединяет слои в одно изображение или GIF.
 
         Args:
@@ -265,7 +264,7 @@ class TextureSystem:
         Returns:
             Union[Image.Image, List[Image.Image]]: Объединенное изображение или список кадров GIF.
         """
-        base_path = os.path.join(ROOT_PATH, 'Content', 'Compiled')
+        base_path = os.path.join(root_path, 'Content', 'Compiled')
         if not os.path.exists(base_path):
             os.makedirs(base_path)
         
@@ -311,7 +310,7 @@ class TextureSystem:
                 final_images[i] = final_image_expanded
         else:
             if is_mask:
-                final_image = TextureSystem.get_image_recolor(first_layer['path'], first_layer['state'], Color.from_tuple(first_layer['color']))
+                final_image = TextureSystem.get_image_recolor(first_layer['path'], first_layer['state'], Color(*first_layer['color']))
             else:
                 final_image = TextureSystem.get_image(first_layer['path'], first_layer['state'])
             
@@ -325,7 +324,7 @@ class TextureSystem:
 
             if is_gif:
                 if is_mask:
-                    recolored_frames = TextureSystem.get_gif_recolor(layer['path'], layer['state'], Color.from_tuple(layer['color']), fps)
+                    recolored_frames = TextureSystem.get_gif_recolor(layer['path'], layer['state'], Color(*layer['color']), fps)
                     for i in range(max_frames):
                         recolored_frame_expanded = Image.new("RGBA", (max_width, max_height))
                         frame_to_use = recolored_frames[min(i, len(recolored_frames) - 1)]  # Используем последний кадр, если i превышает количество кадров
@@ -346,7 +345,7 @@ class TextureSystem:
                             final_images.append(normal_frame_expanded)
             else:
                 if is_mask:
-                    recolored_image = TextureSystem.get_image_recolor(layer['path'], layer['state'], Color.from_tuple(layer['color']))
+                    recolored_image = TextureSystem.get_image_recolor(layer['path'], layer['state'], Color(*layer['color']))
                     recolored_image_expanded = Image.new("RGBA", (max_width, max_height))
                     recolored_image_expanded.paste(recolored_image, (0, 0))
                     for i in range(len(final_images)):

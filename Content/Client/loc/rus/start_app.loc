@@ -1,0 +1,14 @@
+main-app-name = DM-Bot Client
+
+main_text_warning_window = Внимание! Использование DM-Bot разрешено только для пользователей, достигших 18-летнего возраста.
+yes_warning_window = Мне 18 или более лет
+no_warning_window = Мне нет 18 лет
+
+connect_main_text = Соединение с сервером
+connect_login_hint = Логин
+connect_password_hint = Пароль
+connect_host_hint = IP
+connect_port_lable = Порт
+connect_button = Соединиться
+
+on_connect_error_msg = Ошибка при подключении к серверу. Проверьте пароль/логин или адресс подключении
