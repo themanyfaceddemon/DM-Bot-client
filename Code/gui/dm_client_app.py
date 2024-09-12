@@ -1,10 +1,8 @@
 import atexit
-
 import dearpygui.dearpygui as dpg
 from dearpygui_async import DearPyGuiAsync
 from pypresence import Presence
 from systems.loc import Localization as loc
-
 from .fonts_setup import FontManager
 
 
@@ -15,6 +13,7 @@ class DMClientApp:
     def __init__(self):
         dpg.create_context()
         FontManager.load_fonts()
+
         dpg.create_viewport(
             title=loc.get_string("main-app-name"),
             width=600,
@@ -27,12 +26,13 @@ class DMClientApp:
         DMClientApp.rpc.connect()
         DMClientApp.rpc.update(state="Nya~")
 
-        atexit.register(self.rpc.close)
+        atexit.register(DMClientApp.rpc.close)
 
-        self._create_warning_window()
+        DMClientApp._create_warning_window()
 
     @classmethod
     def _create_warning_window(cls):
+        """Создание окна предупреждения"""
         with dpg.window(
             label="Warning",
             tag="warning_window",
@@ -51,16 +51,8 @@ class DMClientApp:
             )
 
     @classmethod
-    def _on_yes(cls, *args):
-        dpg.delete_item("warning_window")
-        cls._create_connect_window()
-
-    @classmethod
-    def _on_no(cls, *args):
-        cls.stop()
-
-    @classmethod
     def _create_connect_window(cls):
+        """Создание окна подключения"""
         if dpg.does_item_exist("connect_window"):
             dpg.focus_item("connect_window")
             return
@@ -74,7 +66,6 @@ class DMClientApp:
             width=380,
         ):
             dpg.add_text(loc.get_string("connect_main_text"))
-
             dpg.add_input_text(
                 hint=loc.get_string("connect_login_hint"), tag="connect_login"
             )
@@ -89,12 +80,22 @@ class DMClientApp:
             dpg.add_input_int(
                 label=loc.get_string("connect_port_lable"), tag="connect_port"
             )
-            dpg.add_button(
-                label=loc.get_string("connect_button")
-            )
+            dpg.add_button(label=loc.get_string("connect_button"))
+
+    @classmethod
+    def _on_yes(cls, *args):
+        """Обработка нажатия кнопки 'Yes' в окне предупреждения"""
+        dpg.delete_item("warning_window")
+        cls._create_connect_window()
+
+    @classmethod
+    def _on_no(cls, *args):
+        """Обработка нажатия кнопки 'No' в окне предупреждения"""
+        cls.stop()
 
     @classmethod
     def run(cls):
+        """Запуск основного цикла приложения"""
         dpg.show_viewport()
         cls._dpg_async.run()
         dpg.start_dearpygui()
@@ -102,4 +103,5 @@ class DMClientApp:
 
     @classmethod
     def stop(cls):
+        """Остановка основного цикла приложения"""
         dpg.stop_dearpygui()

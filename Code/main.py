@@ -3,7 +3,7 @@ from pathlib import Path
 
 from api import *  # noqa: F403
 from DMBotNetwork import Client
-from gui.start import DMClientApp
+from gui.dm_client_app import DMClientApp
 from root_path import ROOT_PATH
 from systems.loc import Localization as loc
 
