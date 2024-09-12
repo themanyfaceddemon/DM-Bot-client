@@ -6,4 +6,5 @@ msgpack
 Pillow
 playsound==1.2.2
 pydub
+pypresence
 PyYAML

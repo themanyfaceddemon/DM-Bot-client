@@ -12,6 +12,7 @@ main-app-name={form-apple} {sex-apple} # комментарий
     .neuter-apple=Оно
 """
 
+
 class Localization:
     _translations: Dict[str, str] = {}
 
@@ -21,11 +22,11 @@ class Localization:
         cls._translations.clear()
 
     @classmethod
-    def load_translations(cls, folder_path: str) -> None:
+    def load_translations(cls, folder_path: str | Path) -> None:
         """Рекурсивно загружает все файлы локализации (.loc) из указанной папки.
 
         Args:
-            folder_path (str): Путь к папке, содержащей файлы локализации.
+            folder_path (str | Path): Путь к папке, содержащей файлы локализации.
         """
         folder = Path(folder_path)
         for file_path in folder.rglob("*.loc"):
@@ -38,21 +39,21 @@ class Localization:
         Args:
             file_path (Path): Путь к файлу локализации (.loc).
         """
-        with file_path.open('r', encoding='utf-8') as file:
+        with file_path.open("r", encoding="utf-8") as file:
             current_key: Optional[str] = None
             for line in file:
                 line = line.strip()
-                
+
                 # Убираем комментарий, если # не экранирован
                 if "#" in line:
                     line = cls._remove_comment(line)
-                
+
                 if "=" in line and not line.startswith("."):
-                    current_key, value = line.split('=', 1)
+                    current_key, value = line.split("=", 1)
                     cls._translations[current_key.strip()] = value.strip()
-                
+
                 elif line.startswith(".") and current_key:
-                    sub_key, sub_value = line.split('=', 1)
+                    sub_key, sub_value = line.split("=", 1)
                     cls._translations[sub_key.strip()] = sub_value.strip()
 
     @staticmethod
@@ -68,10 +69,10 @@ class Localization:
         if r"\#" in line:
             # Если # экранирован, заменяем его на специальный маркер
             line = line.replace(r"\#", "__TEMP_HASH__")
-        
+
         # Оставляем только часть строки до первого #
         line = line.split("#", 1)[0].strip()
-        
+
         # Возвращаем экранированный # обратно
         return line.replace("__TEMP_HASH__", "#")
 
@@ -87,13 +88,13 @@ class Localization:
             str: Ключ формы слова ('form1', 'form2', 'form5').
         """
         if count % 10 == 1 and count % 100 != 11:
-            return f'form1-{base_key}'
-        
+            return f"form1-{base_key}"
+
         elif 2 <= count % 10 <= 4 and not 12 <= count % 100 <= 14:
-            return f'form2-{base_key}'
-        
+            return f"form2-{base_key}"
+
         else:
-            return f'form5-{base_key}'
+            return f"form5-{base_key}"
 
     @classmethod
     def get_string(cls, key: str, **kwargs: Dict[str, Dict[str, Optional[int]]]) -> str:
@@ -105,9 +106,9 @@ class Localization:
 
         Returns:
             str: Строка с подставленными формами и родом или сообщение об отсутствии ключа.
-        
+
         Examples::
-        
+
             result = Localization.get_string(
                 'main-app-name',
                 key1={'count': 3, 'gender': 'female'},
@@ -115,19 +116,23 @@ class Localization:
             )
         """
         text: str = cls._translations.get(key, f"[Missing key: {key}]")
-        
-        for k, v in kwargs.items():
-            if isinstance(v, dict):
-                count: Optional[int] = v.get('count')
-                if count is not None:
-                    form_key: str = Localization._select_form(count, k)
-                    form_value: str = cls._translations.get(form_key, f"[Missing form: {form_key}]")
-                    text = text.replace(f"{{form-{k}}}", form_value)
 
-                gender: Optional[str] = v.get('gender')
+        for key, value in kwargs.items():
+            if isinstance(value, dict):
+                count: Optional[int] = value.get("count", None)  # type: ignore
+                if count is not None:
+                    form_key: str = Localization._select_form(count, key)
+                    form_value: str = cls._translations.get(
+                        form_key, f"[Missing form: {form_key}]"
+                    )
+                    text = text.replace(f"{{form-{key}}}", form_value)
+
+                gender: Optional[str] = value.get("gender", None)  # type: ignore
                 if gender is not None:
-                    gender_key: str = f"{gender}-{k}"
-                    gender_value: str = cls._translations.get(gender_key, f"[Missing gender: {gender_key}]")
-                    text = text.replace(f"{{sex-{k}}}", gender_value)
-        
+                    gender_key: str = f"{gender}-{key}"
+                    gender_value: str = cls._translations.get(
+                        gender_key, f"[Missing gender: {gender_key}]"
+                    )
+                    text = text.replace(f"{{sex-{key}}}", gender_value)
+
         return text
