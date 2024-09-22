@@ -1,0 +1,23 @@
+# For main
+admin_control_menu = Админ панель
+
+# For user managment
+confirm_deletion_text = Вы уверены что хотите удалить пользователя? Это действие не обратимо
+create_new_user_button = Создать пользователя
+delete_confirmation_window = Удалить пользователя
+delete_user_button = Удалить пользователя
+enter_new_user_login = Введите login нового пользователя
+enter_new_user_password = Введите пароль для пользователя
+full_access_warning_message = У пользователя нельзя изменить права доступа
+new_user_window_title = Создание нового пользователя
+user_management_label = Управление игроками
+user_management_search_hint = Введите login для поиска
+user_management_user_logins = Logins
+user_not_loaded = Пользователь не выбран
+
+
+# For server settings
+allow_registration_text = Разрешить регестрацию
+manage_server_settings_lable = Управление настройками сервера
+max_players_text = Максимальное колличество игроков на сервере
+timeout_text = Таймаут для подключения

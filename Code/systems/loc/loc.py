@@ -97,42 +97,45 @@ class Localization:
             return f"form5-{base_key}"
 
     @classmethod
-    def get_string(cls, key: str, **kwargs: Dict[str, Dict[str, Optional[int]]]) -> str:
-        """Возвращает строку перевода с подстановкой форм слов.
+    def get_string(cls, key: str, **kwargs) -> str:
+        """Возвращает строку перевода с подстановкой форм слов или других строк.
 
         Args:
             key (str): Ключ основной строки локализации.
-            **kwargs: Дополнительные параметры для подстановки форм и рода.
+            **kwargs: Дополнительные параметры для подстановки форм, рода или строк.
 
         Returns:
-            str: Строка с подставленными формами и родом или сообщение об отсутствии ключа.
+            str: Строка с подставленными формами, родом или строками, или сообщение об отсутствии ключа.
 
         Examples::
 
             result = Localization.get_string(
                 'main-app-name',
                 key1={'count': 3, 'gender': 'female'},
-                key2={'count': 1, 'gender': 'male'}
+                key2='custom string'
             )
         """
         text: str = cls._translations.get(key, f"[Missing key: {key}]")
 
-        for key, value in kwargs.items():
+        for sub_key, value in kwargs.items():
             if isinstance(value, dict):
-                count: Optional[int] = value.get("count", None)  # type: ignore
+                count: Optional[int] = value.get("count", None)
                 if count is not None:
-                    form_key: str = Localization._select_form(count, key)
+                    form_key: str = Localization._select_form(count, sub_key)
                     form_value: str = cls._translations.get(
                         form_key, f"[Missing form: {form_key}]"
                     )
-                    text = text.replace(f"{{form-{key}}}", form_value)
+                    text = text.replace(f"{{form-{sub_key}}}", form_value)
 
-                gender: Optional[str] = value.get("gender", None)  # type: ignore
+                gender: Optional[str] = value.get("gender", None)
                 if gender is not None:
-                    gender_key: str = f"{gender}-{key}"
+                    gender_key: str = f"{gender}-{sub_key}"
                     gender_value: str = cls._translations.get(
                         gender_key, f"[Missing gender: {gender_key}]"
                     )
-                    text = text.replace(f"{{sex-{key}}}", gender_value)
+                    text = text.replace(f"{{sex-{sub_key}}}", gender_value)
+
+            elif isinstance(value, str):
+                text = text.replace(f"{{{sub_key}}}", value)
 
         return text

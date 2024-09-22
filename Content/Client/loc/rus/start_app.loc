@@ -9,6 +9,11 @@ connect_login_hint = Логин
 connect_password_hint = Пароль
 connect_host_hint = IP
 connect_port_lable = Порт
-connect_button = Соединиться
 
+login_button = Авторизоваться
+register_button = Зарегестрироваться
+
+timeout_error = Время ограничения подключении вышло. Перепроверьте логин и пароль или адресс подключения
 on_connect_error_msg = Ошибка при подключении к серверу. Проверьте пароль/логин или адресс подключении
+
+cur_login = Login: {login}
