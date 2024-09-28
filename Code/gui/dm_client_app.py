@@ -14,7 +14,8 @@ from systems.discord_rpc import DiscordRPC
 from systems.loc import Localization as loc
 
 from .fonts_setup import FontManager
-from .windows.admin import admin_main_window
+from .windows.admin import admin_menu_setup
+from .windows.user import user_menu_setup
 
 
 class DMClientApp:
@@ -213,6 +214,9 @@ class DMClientApp:
             )
         )
         access = await Client.req_get_data("get_access", None, login=Client.get_login())
+        
+        dpg.add_handler_registry(tag='main_registry')
+        
         dpg.add_viewport_menu_bar(tag="main_bar")
 
         dpg.add_menu_item(
@@ -221,9 +225,11 @@ class DMClientApp:
             enabled=False,
         )
 
-        # При всём желании, проверка прав проходит на сервере. Даже не пытайтесь.
+        # При всём желании, проверка прав проходит на сервере. Даже не пытайтесь якобы взломать игру.
         if "full_access" in access:
-            await admin_main_window()
+            await admin_menu_setup()
+
+        await user_menu_setup()
 
     @classmethod
     async def download_content_from_server(cls) -> None:

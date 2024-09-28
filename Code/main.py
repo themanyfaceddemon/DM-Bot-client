@@ -2,6 +2,7 @@ import argparse
 import logging
 from pathlib import Path
 
+from api import ChatClientModule
 from DMBotNetwork import Client
 from gui.dm_client_app import DMClientApp
 from root_path import ROOT_PATH
@@ -14,11 +15,14 @@ class FixedWidthFormatter(logging.Formatter):
         record.levelname = f"{record.levelname:<7}"
         return super().format(record)
 
+
 def init_classes() -> None:
-    pass
+    Client.register_methods_from_class([ChatClientModule])
+
 
 def main() -> None:
     loc.load_translations(Path(ROOT_PATH / "Content" / "Client" / "loc" / "rus"))
+    init_classes()
     DiscordRPC()
 
     Client()

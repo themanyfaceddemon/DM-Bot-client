@@ -5,7 +5,7 @@ from .manage_server_settings import manage_server_settings
 from .manage_users import user_management
 
 
-async def admin_main_window():
+async def admin_menu_setup():
     dpg.add_menu(
         label=loc.get_string("admin_control_menu"),
         tag="admin_control_menu_bar",

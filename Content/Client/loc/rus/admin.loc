@@ -1,5 +1,4 @@
-# For main
-admin_control_menu = Админ панель
+
 
 # For user managment
 confirm_deletion_text = Вы уверены что хотите удалить пользователя? Это действие не обратимо

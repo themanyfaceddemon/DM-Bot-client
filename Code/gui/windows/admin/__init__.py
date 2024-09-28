@@ -1,1 +1,1 @@
-from .main import admin_main_window
+from .main import admin_menu_setup

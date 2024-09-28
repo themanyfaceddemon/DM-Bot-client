@@ -1,6 +1,6 @@
 dearpygui
 dearpygui-async
-DMBotNetwork==0.2.8
+DMBotNetwork==0.3.0
 DMBotTools
 msgpack
 Pillow
