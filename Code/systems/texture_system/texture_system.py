@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import yaml
 from DMBotTools import Color
 from PIL import Image, ImageSequence
+from systems.file_work import AppPath
 
 
 class TextureSystem:
@@ -143,7 +144,7 @@ class TextureSystem:
         """
         image = TextureSystem._get_compiled(path, state, color, False)
         if image:
-            return image
+            return image # type: ignore
         
         with Image.open(f"{path}/{state}.png") as image:
             image = image.convert("RGBA")
@@ -154,7 +155,7 @@ class TextureSystem:
                     int(pixel[0] * color.b / 255),
                     pixel[3]
                 ) if pixel[3] != 0 else pixel
-                for pixel in image.getdata()
+                for pixel in image.getdata() # type: ignore
             ]
 
             image.putdata(new_colored_image)
@@ -177,7 +178,7 @@ class TextureSystem:
         """
         image = TextureSystem._get_compiled(path, state, None, False)
         if image:
-            return image
+            return image # type: ignore
         
         raise FileNotFoundError(f"Image file for state '{state}' not found in path '{path}'.")
 
@@ -196,7 +197,7 @@ class TextureSystem:
         """
         image = TextureSystem._get_compiled(path, state, color, True)
         if image:
-            return image
+            return image # type: ignore
         
         image = TextureSystem.get_image_recolor(path, state, color)
         
@@ -223,7 +224,7 @@ class TextureSystem:
         """
         image = TextureSystem._get_compiled(path, state, None, True)
         if image:
-            return image
+            return image # type: ignore
         
         image = TextureSystem.get_image(path, state)
         frame_width, frame_height, num_frames, _ = TextureSystem.get_state_info(path, state)
@@ -254,7 +255,7 @@ class TextureSystem:
         return merged_image
 
     @staticmethod
-    def merge_layers(root_path, layers: List[Dict[str, Any]], fps: int = DEFAULT_FPS) -> Union[Image.Image, List[Image.Image]]:
+    def merge_layers(layers: List[Dict[str, Any]], fps: int = DEFAULT_FPS) -> Union[Image.Image, List[Image.Image]]:
         """Объединяет слои в одно изображение или GIF.
 
         Args:
@@ -264,7 +265,7 @@ class TextureSystem:
         Returns:
             Union[Image.Image, List[Image.Image]]: Объединенное изображение или список кадров GIF.
         """
-        base_path = os.path.join(root_path, 'Content', 'Compiled')
+        base_path = os.path.join(AppPath.get_data_path(), 'Compiled')
         if not os.path.exists(base_path):
             os.makedirs(base_path)
         

@@ -19,6 +19,9 @@ venv.bak/
 Content/Servers/*
 
 # Texture
-Content/Compiled/*
+data/compiled/*
 *_compiled*.gif
 *_compiled*.png
+
+# Config
+data/*

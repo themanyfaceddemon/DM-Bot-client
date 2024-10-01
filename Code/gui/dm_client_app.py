@@ -9,13 +9,12 @@ import dearpygui.dearpygui as dpg
 import dpg_tools
 from dearpygui_async import DearPyGuiAsync
 from DMBotNetwork import Client
-from root_path import ROOT_PATH
 from systems.discord_rpc import DiscordRPC
+from systems.file_work import AppPath
 from systems.loc import Localization as loc
 
 from .fonts_setup import FontManager
-from .windows.admin import admin_menu_setup
-from .windows.user import user_menu_setup
+from .windows import admin_menu_setup, settings_menu_setup, user_menu_setup
 
 
 class DMClientApp:
@@ -153,7 +152,7 @@ class DMClientApp:
                 login=login,
                 password=password,
                 use_registration=user_data,
-                content_path=Path(ROOT_PATH / "Content" / "Servers"),
+                content_path=AppPath.get_servers_path(),
             )
 
             await Client.connect(host, port)
@@ -180,7 +179,7 @@ class DMClientApp:
         )
 
         dpg.delete_item("connect_window")
-
+        AppPath.update_cur_server_name()
         await cls.setup_start_windows()
 
     @classmethod
@@ -203,20 +202,11 @@ class DMClientApp:
     @classmethod
     async def setup_start_windows(cls) -> None:
         await cls.download_content_from_server()
-        loc.load_translations(
-            Path(
-                ROOT_PATH
-                / "Content"
-                / "Servers"
-                / Client.get_server_name()
-                / "loc"
-                / "rus"
-            )
-        )
+        loc.load_translations(Path(AppPath.get_cur_server_path() / "loc" / "rus"))
         access = await Client.req_get_data("get_access", None, login=Client.get_login())
-        
-        dpg.add_handler_registry(tag='main_registry')
-        
+
+        dpg.add_handler_registry(tag="main_registry")
+
         dpg.add_viewport_menu_bar(tag="main_bar")
 
         dpg.add_menu_item(
@@ -230,12 +220,11 @@ class DMClientApp:
             await admin_menu_setup()
 
         await user_menu_setup()
+        await settings_menu_setup()
 
     @classmethod
     async def download_content_from_server(cls) -> None:
-        server_content_path: Path = (
-            Path(ROOT_PATH) / "Content" / "Servers" / Client.get_server_name()
-        )
+        server_content_path: Path = AppPath.get_cur_server_path()
         local_hash_path = server_content_path / "content_hash"
 
         if local_hash_path.exists():

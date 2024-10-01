@@ -5,8 +5,8 @@ from pathlib import Path
 from api import ChatClientModule
 from DMBotNetwork import Client
 from gui.dm_client_app import DMClientApp
-from root_path import ROOT_PATH
 from systems.discord_rpc import DiscordRPC
+from systems.file_work import AppPath
 from systems.loc import Localization as loc
 
 
@@ -21,7 +21,7 @@ def init_classes() -> None:
 
 
 def main() -> None:
-    loc.load_translations(Path(ROOT_PATH / "Content" / "Client" / "loc" / "rus"))
+    loc.load_translations(Path(AppPath.get_client_path() / "loc" / "rus"))
     init_classes()
     DiscordRPC()
 

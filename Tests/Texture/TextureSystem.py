@@ -8,7 +8,6 @@ import yaml
 from DMBotTools import Color
 from PIL import Image
 
-from Code.root_path import ROOT_PATH
 from Code.systems.texture_system import TextureSystem
 
 
@@ -118,7 +117,7 @@ class TestTextureSystem(unittest.TestCase):
         image = TextureSystem.get_image_recolor(path, state, color)
         compiled_image = TextureSystem._get_compiled(path, state, color, is_gif=False)
         self.assertIsNotNone(compiled_image)
-        self.assertEqual(compiled_image.size, image.size)
+        self.assertEqual(compiled_image.size, image.size) # type: ignore
 
     def test_get_compiled_gif(self):
         path = self.test_dir
@@ -128,9 +127,9 @@ class TestTextureSystem(unittest.TestCase):
         gif_frames = TextureSystem.get_gif_recolor(path, state, color)
         compiled_gif_frames = TextureSystem._get_compiled(path, state, color, is_gif=True)
         self.assertIsNotNone(compiled_gif_frames)
-        self.assertEqual(len(compiled_gif_frames), len(gif_frames))
+        self.assertEqual(len(compiled_gif_frames), len(gif_frames)) # type: ignore
         for i in range(len(gif_frames)):
-            self.assertEqual(compiled_gif_frames[i].size, gif_frames[i].size)
+            self.assertEqual(compiled_gif_frames[i].size, gif_frames[i].size) # type: ignore
 
     def test_get_image_recolor(self):
         path = self.test_dir
@@ -183,7 +182,7 @@ class TestTextureSystem(unittest.TestCase):
 
         # Проверка с учетом допустимой погрешности
         tolerance = 1
-        self.assertTrue(all(abs(a - b) <= tolerance for a, b in zip(actual_pixel, expected_pixel)), 
+        self.assertTrue(all(abs(a - b) <= tolerance for a, b in zip(actual_pixel, expected_pixel)),  # type: ignore
                         f"Expected {expected_pixel} but got {actual_pixel}")
 
     def test_merge_layers(self):
@@ -191,19 +190,19 @@ class TestTextureSystem(unittest.TestCase):
             {'path': self.test_dir, 'state': 'state1', 'color': (255, 0, 0, 255)},
             {'path': self.test_dir, 'state': 'state3', 'color': (0, 255, 0, 255)}
         ]
-        result_image = TextureSystem.merge_layers(ROOT_PATH, layers)
+        result_image = TextureSystem.merge_layers(layers)
         self.assertIsNotNone(result_image)
-        self.assertEqual(result_image.size, (200, 200))
+        self.assertEqual(result_image.size, (200, 200)) # type: ignore
 
         layers = [
             {'path': self.test_dir, 'state': 'state2', 'color': (255, 0, 0, 255)},
             {'path': self.test_dir, 'state': 'state4', 'color': (0, 255, 0, 255)}
         ]
-        result_gif = TextureSystem.merge_layers(ROOT_PATH, layers)
+        result_gif = TextureSystem.merge_layers(layers)
         self.assertIsNotNone(result_gif)
         self.assertTrue(isinstance(result_gif, list))
-        self.assertGreater(len(result_gif), 0)
-        for frame in result_gif:
+        self.assertGreater(len(result_gif), 0) # type: ignore
+        for frame in result_gif: # type: ignore
             self.assertEqual(frame.size, (250, 250))
 
 
