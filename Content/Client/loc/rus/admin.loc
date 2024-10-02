@@ -1,5 +1,3 @@
-
-
 # For user managment
 confirm_deletion_text = Вы уверены что хотите удалить пользователя? Это действие не обратимо
 create_new_user_button = Создать пользователя

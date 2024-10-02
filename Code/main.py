@@ -6,7 +6,7 @@ from api import ChatClientModule
 from DMBotNetwork import Client
 from gui.dm_client_app import DMClientApp
 from systems.discord_rpc import DiscordRPC
-from systems.file_work import AppPath
+from systems.file_work import AppPath, Settings
 from systems.loc import Localization as loc
 
 
@@ -17,6 +17,8 @@ class FixedWidthFormatter(logging.Formatter):
 
 
 def init_classes() -> None:
+    Settings.load()
+
     Client.register_methods_from_class([ChatClientModule])
 
 

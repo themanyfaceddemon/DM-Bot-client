@@ -3,11 +3,11 @@ from api import ChatClientModule
 from systems.loc import Localization as loc
 
 
-async def settings_menu_setup():
+def settings_menu_setup():
     dpg.add_menu(
         label=loc.get_string("settings_menu"),
         tag="settings_menu_bar",
-        parent="main_bar",
+        parent="main_vp_bar",
     )
 
     dpg.add_menu_item(

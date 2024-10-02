@@ -20,7 +20,7 @@ class AppPath:
 
     @classmethod
     def get_data_path(cls) -> Path:
-        return cls._client_path
+        return cls._data_path
 
     @classmethod
     def get_servers_path(cls) -> Path:

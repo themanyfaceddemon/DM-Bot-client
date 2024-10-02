@@ -1,0 +1,8 @@
+direct_connect_main_text = Соединение с сервером
+connect_login_hint = Логин
+connect_password_hint = Пароль
+connect_host_hint = IP
+connect_port_lable = Порт
+
+login_button = Авторизоваться
+register_button = Зарегестрироваться
