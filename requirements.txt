@@ -1,6 +1,6 @@
 dearpygui
 dearpygui-async
-DMBotNetwork==0.3.0
+DMBotNetwork==0.3.1
 DMBotTools
 msgpack
 Pillow
@@ -8,3 +8,4 @@ playsound==1.2.2
 pydub
 pypresence
 PyYAML
+requests

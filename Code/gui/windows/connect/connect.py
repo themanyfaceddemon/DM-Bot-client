@@ -74,11 +74,7 @@ async def _load_server_content() -> None:
 
 
 async def _load_vp_menu_obj() -> None:
-    access = await Client.req_get_data(
-        "get_access", None, login=Client.get_login()
-    )  # TODO: Добавить access в Client для более удобного доступа
-
-    if "full_access" in access:
+    if "full_access" in Client.get_access():
         admin_menu_setup()
 
     user_menu_setup()

@@ -3,7 +3,7 @@ import dpg_tools
 from systems.discord_rpc import DiscordRPC
 from systems.loc import Localization as loc
 
-from .direct_connect import create_direct_connect_window
+from .hub import create_hub_window
 
 
 def create_warning_window():
@@ -29,7 +29,7 @@ async def _on_yes(*args):
     await DiscordRPC.connect()
     await DiscordRPC.update("Connect to server...")
     
-    await create_direct_connect_window()# TODO: Должно вызывать окно хаба
+    await create_hub_window()
 
 
 def _on_no(*args):

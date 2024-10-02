@@ -6,20 +6,20 @@ from .connect import connect
 
 
 async def create_direct_connect_window():
-    if dpg.does_item_exist("connect_window"):
-        dpg.focus_item("connect_window")
+    if dpg.does_item_exist("direct_connect_window"):
+        dpg.focus_item("direct_connect_window")
         return
 
     with dpg.window(
         label="Connect",
-        tag="connect_window",
+        tag="direct_connect_window",
         no_close=True,
         no_collapse=True,
         no_move=True,
         width=380,
         height=380,
     ):
-        dpg.add_text(loc.get_string("direct_connect_main_text"))
+        dpg.add_text(loc.get_string("direct_connect_window_main_text"))
         dpg.add_input_text(
             hint=loc.get_string("connect_login_hint"), tag="connect_login"
         )
@@ -51,7 +51,7 @@ async def create_direct_connect_window():
             user_data=True,
         )
 
-        dpg_tools.center_window("connect_window")
+        dpg_tools.center_window("direct_connect_window")
 
 
 async def _connect_to_server(sender, app_data, user_data) -> None:
