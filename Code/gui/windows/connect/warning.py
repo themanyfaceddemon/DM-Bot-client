@@ -25,10 +25,10 @@ def create_warning_window():
 
 async def _on_yes(*args):
     dpg.delete_item("warning_window")
-    
+
     await DiscordRPC.connect()
     await DiscordRPC.update("Connect to server...")
-    
+
     await create_hub_window()
 
 

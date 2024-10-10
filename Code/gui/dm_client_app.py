@@ -1,11 +1,11 @@
 import dearpygui.dearpygui as dpg
 from dearpygui_async import DearPyGuiAsync
+from DMBotNetwork import Client
 from gui.windows.settings import settings_menu_setup
 from systems.loc import Localization as loc
 
 from .fonts_setup import FontManager
 from .windows.connect import create_warning_window
-from DMBotNetwork import Client
 
 
 class DMClientApp:

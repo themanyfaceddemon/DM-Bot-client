@@ -21,3 +21,10 @@ def settings_menu_setup():
         parent="settings_menu_bar",
         callback=ChatClientModule.create_window,
     )
+
+    dpg.add_key_press_handler(parent="main_registry", callback=key_press_callback)
+
+
+def key_press_callback(sender, app_data, user_data):
+    if app_data == dpg.mvKey_F11:
+        dpg.toggle_viewport_fullscreen()
